@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রিয়েল-টাইম গ্রুপ চ্যাট</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="chat-container">
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" /><button>প্রেরণ করুন</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+
+        // **নতুন যোগ করা অংশ: ব্যবহারকারীর নাম ইনপুট নেওয়া**
+        let username = prompt("আপনার নাম লিখুন:", "Guest");
+        if (!username) {
+            username = "Guest"; // যদি ব্যবহারকারী নাম না দেয়, তাহলে Guest হবে
+        }
+        // ---------------------------------------------------
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value) {
+                // **পরিবর্তিত অংশ: মেসেজের সাথে ব্যবহারকারীর নাম পাঠানো**
+                socket.emit('chat message', { username: username, message: input.value });
+                // ---------------------------------------------------
+                input.value = '';
+            }
+        });
+
+        // **পরিবর্তিত অংশ: মেসেজ প্রদর্শনের সময় ব্যবহারকারীর নাম দেখানো**
+        socket.on('chat message', (data) => {
+            const item = document.createElement('li');
+            item.innerHTML = `<b>${data.username}:</b> ${data.message}`; // নাম এবং মেসেজ একসাথে দেখানো
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+        // ---------------------------------------------------
+    </script>
+</body>
+</html>
