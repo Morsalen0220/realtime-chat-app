@@ -21,3 +21,16 @@ body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSyst
 #messages > li b {
     color: #007bff; /* নামের কালার */
 }
+
+/* আপনার আগের CSS কোড থাকবে */
+
+#messages > li b {
+    color: #007bff;
+}
+
+/* **নতুন যোগ করা অংশ: টাইমস্ট্যাম্পের স্টাইল** */
+.timestamp {
+    font-size: 0.75em; /* ফন্ট সাইজ ছোট করা */
+    color: #888;     /* ধূসর কালার */
+    margin-left: 10px; /* মেসেজ থেকে কিছুটা দূরত্ব */
+}
