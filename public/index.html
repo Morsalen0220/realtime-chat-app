@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,29 +26,41 @@
             username = "Guest";
         }
 
+        // পূর্ববর্তী মেসেজ ডিসপ্লে করার জন্য একটি ফাংশন
+        function displayMessage(data) {
+            const item = document.createElement('li');
+            item.innerHTML = `<b>${data.username}:</b> ${data.message} <small class="timestamp">${data.timestamp}</small>`;
+            messages.appendChild(item);
+        }
+
+        // **নতুন যোগ করা অংশ: সার্ভার থেকে পূর্ববর্তী মেসেজ লোড করা**
+        socket.on('previous messages', (msgs) => {
+            console.log('পূর্ববর্তী মেসেজ লোড হচ্ছে:', msgs);
+            msgs.forEach(msg => {
+                displayMessage(msg); // প্রতিটি পুরনো মেসেজ ডিসপ্লে করুন
+            });
+            window.scrollTo(0, document.body.scrollHeight); // একবারেই নিচে স্ক্রল করুন
+        });
+        // ---------------------------------------------------
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (input.value) {
-                // **নতুন/পরিবর্তিত অংশ: বর্তমান সময় (timestamp) যোগ করা**
                 const now = new Date();
-                const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // উদাহরণ: "10:30 AM"
+                const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 socket.emit('chat message', {
                     username: username,
                     message: input.value,
-                    timestamp: timestamp // টাইমস্ট্যাম্প পাঠানো হচ্ছে
+                    timestamp: timestamp
                 });
-                // ---------------------------------------------------
                 input.value = '';
             }
         });
 
-        // **পরিবর্তিত অংশ: মেসেজ প্রদর্শনের সময় টাইমস্ট্যাম্প দেখানো**
+        // **পরিবর্তিত অংশ: নতুন মেসেজ ডিসপ্লে করার জন্য একই ফাংশন ব্যবহার**
         socket.on('chat message', (data) => {
-            const item = document.createElement('li');
-            // নাম, মেসেজ এবং টাইমস্ট্যাম্প একসাথে দেখানো
-            item.innerHTML = `<b>${data.username}:</b> ${data.message} <small class="timestamp">${data.timestamp}</small>`;
-            messages.appendChild(item);
+            displayMessage(data); // নতুন মেসেজ ডিসপ্লে করুন
             window.scrollTo(0, document.body.scrollHeight);
         });
         // ---------------------------------------------------
