@@ -3,67 +3,405 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>রিয়েল-টাইম গ্রুপ চ্যাট</title>
+    <title>রিয়েল-টাইম গ্রুপ ও প্রাইভেট চ্যাট</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="chat-container">
-        <ul id="messages"></ul>
-        <form id="form" action="">
-            <input id="input" autocomplete="off" /><button>প্রেরণ করুন</button>
-        </form>
+        <div id="auth-overlay">
+            <div class="auth-box">
+                <h2 id="auth-title">চ্যাটে স্বাগতম!</h2>
+                <div id="login-form">
+                    <input type="text" id="loginUsername" placeholder="ইউজারনেম" autocomplete="off" />
+                    <input type="password" id="loginPassword" placeholder="পাসওয়ার্ড" autocomplete="off" />
+                    <button id="loginBtn">লগইন</button>
+                    <p>একাউন্ট নেই? <a href="#" id="showRegister">রেজিস্টার করুন</a></p>
+                </div>
+                <div id="register-form" style="display:none;">
+                    <input type="text" id="registerUsername" placeholder="ইউজারনেম" autocomplete="off" />
+                    <input type="password" id="registerPassword" placeholder="পাসওয়ার্ড" autocomplete="off" />
+                    <button id="registerBtn">রেজিস্টার</button>
+                    <p>ইতিমধ্যে একাউন্ট আছে? <a href="#" id="showLogin">লগইন করুন</a></p>
+                </div>
+                <button id="guestBtn">অতিথি হিসেবে প্রবেশ করুন</button>
+            </div>
+        </div>
+
+        <div id="main-chat-content" style="display: none;">
+            <div id="sidebar">
+                <h3>অনলাইন</h3>
+                <ul id="online-users-list"></ul>
+            </div>
+            <div id="chat-area">
+                <div id="top-bar">
+                    <button id="showRoomsBtn" class="top-bar-btn">রুমস</button>
+                    <button id="showOnlineUsersBtn" class="top-bar-btn">অনলাইন</button>
+                    <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
+                    <span id="currentRoomDisplayTop"></span>
+                    <span id="loggedInUserInfo"></span>
+                    <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
+                </div>
+                <div id="room-selection-buttons">
+                    <button id="publicChatBtn" class="room-btn active">পাবলিক চ্যাট</button>
+                    <button id="privateChatBtn" class="room-btn">প্রাইভেট চ্যাট</button>
+                </div>
+                <div id="private-code-section" style="display: none;">
+                    <input type="text" id="roomCodeInput" placeholder="প্রাইভেট কোড লিখুন" autocomplete="off" />
+                    <button id="joinPrivateRoomBtn">রুমে প্রবেশ করুন</button>
+                    <button id="createPrivateRoomBtn">নতুন রুম তৈরি করুন</button>
+                </div>
+                <ul id="messages"></ul>
+                <div id="typing-indicator"></div>
+                <form id="form" action="">
+                    <input id="input" autocomplete="off" /><button>প্রেরণ করুন</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="rooms-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>সংরক্ষিত রুমসমূহ</h2>
+            <ul id="saved-rooms-list"></ul>
+        </div>
+    </div>
+
+    <div id="online-users-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>অনলাইন ইউজার</h2>
+            <ul id="online-users-list-modal"></ul>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const form = document.getElementById('form');
-        const input = document.getElementById('input');
-        const messages = document.getElementById('messages');
 
-        let username = prompt("আপনার নাম লিখুন:", "Guest");
-        if (!username) {
-            username = "Guest";
-        }
+        const UI_ELEMENTS = {
+            authOverlay: document.getElementById('auth-overlay'),
+            loginForm: document.getElementById('login-form'),
+            registerForm: document.getElementById('register-form'),
+            showRegister: document.getElementById('showRegister'),
+            showLogin: document.getElementById('showLogin'),
+            loginUsername: document.getElementById('loginUsername'),
+            loginPassword: document.getElementById('loginPassword'),
+            loginBtn: document.getElementById('loginBtn'),
+            registerUsername: document.getElementById('registerUsername'),
+            registerPassword: document.getElementById('registerPassword'),
+            registerBtn: document.getElementById('registerBtn'),
+            guestBtn: document.getElementById('guestBtn'),
+            authTitle: document.getElementById('auth-title'),
+            mainChatContent: document.getElementById('main-chat-content'),
+            showRoomsBtn: document.getElementById('showRoomsBtn'),
+            currentRoomDisplayTop: document.getElementById('currentRoomDisplayTop'),
+            loggedInUserInfo: document.getElementById('loggedInUserInfo'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            roomSelectionButtons: document.getElementById('room-selection-buttons'),
+            publicChatBtn: document.getElementById('publicChatBtn'),
+            privateChatBtn: document.getElementById('privateChatBtn'),
+            privateCodeSection: document.getElementById('private-code-section'),
+            roomCodeInput: document.getElementById('roomCodeInput'),
+            joinPrivateRoomBtn: document.getElementById('joinPrivateRoomBtn'),
+            createPrivateRoomBtn: document.getElementById('createPrivateRoomBtn'),
+            form: document.getElementById('form'),
+            input: document.getElementById('input'),
+            messages: document.getElementById('messages'),
+            roomsModal: document.getElementById('rooms-modal'),
+            closeButton: document.querySelector('#rooms-modal .close-button'),
+            savedRoomsList: document.getElementById('saved-rooms-list'),
+            // নতুন UI উপাদান
+            onlineUsersList: document.getElementById('online-users-list'),
+            typingIndicator: document.getElementById('typing-indicator'),
+             clearChatBtn: document.getElementById('clearChatBtn'),
+            showOnlineUsersBtn: document.getElementById('showOnlineUsersBtn'),
+            onlineUsersModal: document.getElementById('online-users-modal'),
+            onlineUsersListModal: document.getElementById('online-users-list-modal'),
+            onlineUsersModalCloseBtn: document.querySelector('#online-users-modal .close-button')
+        };
 
-        // পূর্ববর্তী মেসেজ ডিসপ্লে করার জন্য একটি ফাংশন
+        let username = '';
+        let currentRoom = '';
+        let userType = 'guest';
+
+        function setUIState(state) {
+            UI_ELEMENTS.authOverlay.style.display = 'none';
+            UI_ELEMENTS.mainChatContent.style.display = 'none';
+            if (state === 'login') {
+                UI_ELEMENTS.authOverlay.style.display = 'flex';
+                UI_ELEMENTS.loginForm.style.display = 'block';
+                UI_ELEMENTS.registerForm.style.display = 'none';
+                UI_ELEMENTS.authTitle.textContent = 'লগইন করুন';
+                UI_ELEMENTS.guestBtn.style.display = 'block';
+            } else if (state === 'register') {
+                UI_ELEMENTS.authOverlay.style.display = 'flex';
+                UI_ELEMENTS.loginForm.style.display = 'none';
+                UI_ELEMENTS.registerForm.style.display = 'block';
+                UI_ELEMENTS.authTitle.textContent = 'রেজিস্টার করুন';
+                UI_ELEMENTS.guestBtn.style.display = 'none';
+            } else if (state === 'chat') {
+                UI_ELEMENTS.mainChatContent.style.display = 'flex';
+                UI_ELEMENTS.loggedInUserInfo.textContent = `স্বাগতম, ${username}!`;
+                UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
+            }
+        };
+
+        async function apiRequest(endpoint, body) {
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Something went wrong');
+                return { ok: true, data };
+            } catch (error) {
+                return { ok: false, data: { message: error.message || 'সার্ভার ত্রুটি।' } };
+            }
+        };
+
+        function handleAuthSuccess(data) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('userId', data.userId);
+            localStorage.setItem('userType', 'registered');
+            authenticateSocket();
+        };
+
+        UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
+            const body = { username: UI_ELEMENTS.loginUsername.value.trim(), password: UI_ELEMENTS.loginPassword.value.trim() };
+            if (!body.username || !body.password) return alert('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।');
+            const { ok, data } = await apiRequest('/api/login', body);
+            if (ok) { alert(data.message); handleAuthSuccess(data); } else { alert(data.message); }
+        });
+
+        UI_ELEMENTS.registerBtn.addEventListener('click', async () => {
+            const body = { username: UI_ELEMENTS.registerUsername.value.trim(), password: UI_ELEMENTS.registerPassword.value.trim() };
+            if (!body.username || !body.password) return alert('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।');
+            const { ok, data } = await apiRequest('/api/register', body);
+            if (ok) { alert(data.message); handleAuthSuccess(data); } else { alert(data.message); }
+        });
+        
+        UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
+        UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
+
+        UI_ELEMENTS.guestBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            const guestId = (localStorage.getItem('userId') && localStorage.getItem('userId').startsWith('guest-')) ? localStorage.getItem('userId') : null;
+            authenticateSocket(guestId);
+        });
+
+        UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
+            ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms'].forEach(key => localStorage.removeItem(key));
+            socket.disconnect().connect();
+            setUIState('login');
+        });
+
+        UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
+    // ব্যবহারকারীকে সতর্ক করা হচ্ছে
+    if (confirm('আপনি কি সত্যিই এই রুমের সব মেসেজ সবার জন্য স্থায়ীভাবে মুছে ফেলতে চান? এই কাজটি ফিরিয়ে আনা সম্ভব নয়।')) {
+        // সার্ভারকে চ্যাট ক্লিয়ার করার জন্য অনুরোধ পাঠানো হচ্ছে
+        socket.emit('clear room chat', { roomCode: currentRoom });
+    }
+});
+      
         function displayMessage(data) {
             const item = document.createElement('li');
-            item.innerHTML = `<b>${data.username}:</b> ${data.message} <small class="timestamp">${data.timestamp}</small>`;
-            messages.appendChild(item);
-        }
+            item.dataset.messageId = data._id;
+            const currentUserId = localStorage.getItem('userId');
+            let buttonsHTML = '';
+            if (data.userId === currentUserId && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
+                buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="Edit">✏️</button><button class="delete-btn" title="Delete">🗑️</button></div>`;
+            }
+            const editedIndicator = data.isEdited && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' ? `<small class="edited-indicator">(edited)</small>` : '';
+            item.innerHTML = `<div><b>${data.username}:</b> <span class="message-text">${data.message}</span>${editedIndicator}</div>${buttonsHTML}<small class="timestamp">${data.timestamp}</small>`;
+            UI_ELEMENTS.messages.appendChild(item);
+            UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
+        };
 
-        // **নতুন যোগ করা অংশ: সার্ভার থেকে পূর্ববর্তী মেসেজ লোড করা**
-        socket.on('previous messages', (msgs) => {
-            console.log('পূর্ববর্তী মেসেজ লোড হচ্ছে:', msgs);
-            msgs.forEach(msg => {
-                displayMessage(msg); // প্রতিটি পুরনো মেসেজ ডিসপ্লে করুন
+        function joinRoom(roomName) {
+            currentRoom = roomName;
+            UI_ELEMENTS.currentRoomDisplayTop.textContent = `আপনি ${currentRoom === 'public' ? 'পাবলিক চ্যাটে' : currentRoom + ' রুমে'} আছেন`;
+            UI_ELEMENTS.messages.innerHTML = '';
+            socket.emit('join room', currentRoom);
+            localStorage.setItem('lastRoom', roomName);
+            if (roomName !== 'public') {
+                localStorage.setItem('savedPrivateCode', roomName);
+                addRoomToSavedList(roomName);
+            }
+            UI_ELEMENTS.roomsModal.style.display = 'none';
+        };
+
+        function addRoomToSavedList(roomCode) {
+            let savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
+            if (!savedRooms.includes(roomCode) && roomCode !== 'public') {
+                savedRooms.push(roomCode);
+                localStorage.setItem('savedRooms', JSON.stringify(savedRooms));
+                renderSavedRooms();
+            }
+        };
+
+        function renderSavedRooms() {
+            const savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
+            UI_ELEMENTS.savedRoomsList.innerHTML = '';
+            ['public', ...savedRooms.filter(r => r !== 'public')].forEach(room => {
+                const li = document.createElement('li');
+                li.textContent = room === 'public' ? 'পাবলিক চ্যাট' : room;
+                li.addEventListener('click', () => joinRoom(room));
+                UI_ELEMENTS.savedRoomsList.appendChild(li);
             });
-            window.scrollTo(0, document.body.scrollHeight); // একবারেই নিচে স্ক্রল করুন
+        };
+
+        function authenticateSocket(guestId = null) {
+            socket.emit('authenticate', { token: localStorage.getItem('token'), guestId }, (res) => {
+                if (res.success) {
+                    username = res.username;
+                    userType = res.type;
+                    localStorage.setItem('userId', res.userId);
+                    localStorage.setItem('username', res.username);
+                    setUIState('chat');
+                    const savedRoom = localStorage.getItem('lastRoom') || 'public';
+                    joinRoom(savedRoom);
+                    renderSavedRooms();
+                } else {
+                    setUIState('login');
+                }
+            });
+        };
+
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token'), userId = localStorage.getItem('userId'), userType = localStorage.getItem('userType');
+            if (token && userType === 'registered') authenticateSocket();
+            else if (userId && userType === 'guest') authenticateSocket(userId);
+            else setUIState('login');
         });
-        // ---------------------------------------------------
 
-        form.addEventListener('submit', (e) => {
+        UI_ELEMENTS.publicChatBtn.addEventListener('click', () => {
+            UI_ELEMENTS.publicChatBtn.classList.add('active');
+            UI_ELEMENTS.privateChatBtn.classList.remove('active');
+            UI_ELEMENTS.privateCodeSection.style.display = 'none';
+            joinRoom('public');
+        });
+        UI_ELEMENTS.privateChatBtn.addEventListener('click', () => {
+            UI_ELEMENTS.privateChatBtn.classList.add('active');
+            UI_ELEMENTS.publicChatBtn.classList.remove('active');
+            UI_ELEMENTS.privateCodeSection.style.display = 'flex';
+        });
+
+        UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
+            const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
+            if (!privateCode) return alert('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!');
+            socket.emit('check room existence', privateCode, (exists) => {
+                if (exists) joinRoom(privateCode);
+                else alert('এই রুমটি বিদ্যমান নেই। একটি নতুন রুম তৈরি করুন অথবা সঠিক কোড দিন।');
+            });
+        });
+        
+        UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
+            const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
+            if (!privateCode) return alert('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!');
+            socket.emit('create private room', privateCode, username, (response) => {
+                if (response.success) {
+                    joinRoom(privateCode);
+                    alert(response.message);
+                } else {
+                    alert(response.message || 'রুম তৈরি করতে সমস্যা হয়েছে।');
+                }
+            });
+        });
+
+        UI_ELEMENTS.form.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (input.value) {
-                const now = new Date();
-                const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                socket.emit('chat message', {
-                    username: username,
-                    message: input.value,
-                    timestamp: timestamp
-                });
-                input.value = '';
+            const message = UI_ELEMENTS.input.value.trim();
+            if (message) {
+                socket.emit('chat message', { message, room: currentRoom, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                UI_ELEMENTS.input.value = '';
             }
         });
 
-        // **পরিবর্তিত অংশ: নতুন মেসেজ ডিসপ্লে করার জন্য একই ফাংশন ব্যবহার**
-        socket.on('chat message', (data) => {
-            displayMessage(data); // নতুন মেসেজ ডিসপ্লে করুন
-            window.scrollTo(0, document.body.scrollHeight);
+        UI_ELEMENTS.messages.addEventListener('click', (e) => {
+            const messageLi = e.target.closest('li[data-message-id]');
+            if (!messageLi) return;
+            const messageId = messageLi.dataset.messageId;
+            if (e.target.classList.contains('delete-btn') && confirm('আপনি কি মেসেজটি মুছে ফেলতে চান?')) {
+                socket.emit('delete message', { messageId });
+            }
+            if (e.target.classList.contains('edit-btn')) {
+                const textElem = messageLi.querySelector('.message-text');
+                const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
+                if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
+                    socket.emit('edit message', { messageId, newMessageText: newText });
+                }
+            }
         });
-        // ---------------------------------------------------
+
+        let typingIndicatorTimer;
+        UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
+        
+        socket.on('user typing', ({ username: typingUsername }) => {
+            if (typingUsername !== username) {
+                UI_ELEMENTS.typingIndicator.textContent = `${typingUsername} is typing...`;
+                clearTimeout(typingIndicatorTimer);
+                typingIndicatorTimer = setTimeout(() => { UI_ELEMENTS.typingIndicator.textContent = ''; }, 3000);
+            }
+        });
+
+        function renderOnlineUserList(users) {
+            const uniqueUsers = [...new Map(users.map(item => [item.userId, item])).values()];
+            const listHtml = uniqueUsers.map(user => 
+                `<li class="online-user"><span class="online-status-dot"></span> ${user.username}</li>`
+            ).join('');
+            UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
+            UI_ELEMENTS.onlineUsersListModal.innerHTML = listHtml;
+        }
+
+        socket.on('online users list', renderOnlineUserList);
+        socket.on('previous messages', (msgs) => { UI_ELEMENTS.messages.innerHTML = ''; msgs.forEach(displayMessage); });
+        socket.on('chat message', displayMessage);
+        socket.on('user joined', (msg) => {
+             const item = document.createElement('li');
+             item.innerHTML = `<i>${msg}</i>`;
+             UI_ELEMENTS.messages.appendChild(item);
+        });
+        socket.on('message edited', ({ messageId, newMessageText }) => {
+            const msgLi = document.querySelector(`li[data-message-id="${messageId}"]`);
+            if(msgLi) {
+                const textElem = msgLi.querySelector('.message-text');
+                textElem.textContent = newMessageText;
+                if(newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
+                    msgLi.querySelector('.message-actions')?.remove();
+                }
+                if(!msgLi.querySelector('.edited-indicator')) {
+                    const indicator = document.createElement('small');
+                    indicator.className = 'edited-indicator';
+                    indicator.textContent = ' (edited)';
+                    textElem.insertAdjacentElement('afterend', indicator);
+                }
+            }
+        });
+
+socket.on('chat cleared', () => {
+    UI_ELEMENTS.messages.innerHTML = ''; // মেসেজ লিস্ট খালি করে দেওয়া হচ্ছে
+    
+    // একটি সিস্টেম মেসেজ দেখানো হচ্ছে
+    const item = document.createElement('li');
+    item.innerHTML = `<i>এই রুমের চ্যাট অ্যাডমিন দ্বারা পরিষ্কার করা হয়েছে।</i>`;
+    UI_ELEMENTS.messages.appendChild(item);
+});
+        socket.on('error', (message) => { alert(message); setUIState('login'); });
+
+        // Modal event listeners
+        UI_ELEMENTS.showRoomsBtn.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'flex'; });
+        UI_ELEMENTS.closeButton.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'none'; });
+        window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'none'; });
+
+        UI_ELEMENTS.showOnlineUsersBtn.addEventListener('click', () => { UI_ELEMENTS.onlineUsersModal.style.display = 'flex'; });
+        UI_ELEMENTS.onlineUsersModalCloseBtn.addEventListener('click', () => { UI_ELEMENTS.onlineUsersModal.style.display = 'none'; });
+        window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.onlineUsersModal) UI_ELEMENTS.onlineUsersModal.style.display = 'none'; });
+
     </script>
 </body>
 </html>
