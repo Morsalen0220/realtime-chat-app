@@ -14,6 +14,15 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 6 // সর্বনিম্ন 6 অক্ষর
     },
+	avatar: {
+        type: String,
+        default: 'avatars/avatar1.png' // ডিফল্ট অ্যাভাটার
+    },
+	status: {
+        type: String,
+        default: 'Hey there! I am using this chat app.',
+        maxlength: 150
+    },
     createdAt: {
         type: Date,
         default: Date.now

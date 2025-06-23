@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>রিয়েল-টাইম গ্রুপ ও প্রাইভেট চ্যাট</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/emoji-button@latest/dist/index.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="chat-container">
@@ -29,6 +30,9 @@
         </div>
 
         <div id="main-chat-content" style="display: none;">
+            <button id="hamburger-menu" class="top-bar-btn">☰</button>
+            <div id="menu-overlay"></div>
+
             <div id="sidebar">
                 <h3>অনলাইন</h3>
                 <ul id="online-users-list"></ul>
@@ -36,10 +40,12 @@
             <div id="chat-area">
                 <div id="top-bar">
                     <button id="showRoomsBtn" class="top-bar-btn">রুমস</button>
-                    <button id="showOnlineUsersBtn" class="top-bar-btn">অনলাইন</button>
-                    <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
                     <span id="currentRoomDisplayTop"></span>
-                    <span id="loggedInUserInfo"></span>
+                    <div id="user-profile-info">
+                        <span id="loggedInUserInfo"></span>
+                        <img id="user-avatar-top" src="avatars/avatar1.png" alt="My Avatar">
+                    </div>
+                    <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
                     <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
                 </div>
                 <div id="room-selection-buttons">
@@ -54,8 +60,10 @@
                 <ul id="messages"></ul>
                 <div id="typing-indicator"></div>
                 <form id="form" action="">
-                    <input id="input" autocomplete="off" /><button>প্রেরণ করুন</button>
-                </form>
+    <button type="button" id="emoji-btn">😀</button>
+    <input id="input" autocomplete="off" placeholder="মেসেজ লিখুন..." />
+    <button type="submit">প্রেরণ করুন</button>
+</form>
             </div>
         </div>
     </div>
@@ -68,13 +76,37 @@
         </div>
     </div>
 
-    <div id="online-users-modal" class="modal">
+    <div id="profile-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>অনলাইন ইউজার</h2>
-            <ul id="online-users-list-modal"></ul>
+            <h2>প্রোফাইল সেটিংস</h2>
+            <div id="avatar-selection">
+                <p>আপনার অ্যাভাটার বেছে নিন:</p>
+                <div class="avatar-options">
+                    <img src="avatars/avatar1.png" class="avatar-choice" data-avatar="avatars/avatar1.png" alt="Avatar 1">
+                    <img src="avatars/avatar2.png" class="avatar-choice" data-avatar="avatars/avatar2.png" alt="Avatar 2">
+                    <img src="avatars/avatar3.png" class="avatar-choice" data-avatar="avatars/avatar3.png" alt="Avatar 3">
+                    <img src="avatars/avatar4.png" class="avatar-choice" data-avatar="avatars/avatar4.png" alt="Avatar 4">
+                </div>
+            </div>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <div id="status-update-section">
+                <p>আপনার স্ট্যাটাস পরিবর্তন করুন:</p>
+                <textarea id="status-input" rows="3" maxlength="150" placeholder="আপনার স্ট্যাটাস এখানে লিখুন..."></textarea>
+                <button id="save-status-btn">স্ট্যাটাস সেভ করুন</button>
+            </div>
         </div>
     </div>
+	<div id="view-profile-modal" class="modal">
+    <div class="modal-content profile-view">
+        <span class="close-button">&times;</span>
+        <div id="profile-details">
+            <img id="profile-view-avatar" src="avatars/avatar1.png" alt="User Avatar">
+            <h2 id="profile-view-username">ইউজারনেম</h2>
+            <p id="profile-view-status">স্ট্যাটাস এখানে দেখা যাবে...</p>
+        </div>
+    </div>
+</div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -99,6 +131,7 @@
             currentRoomDisplayTop: document.getElementById('currentRoomDisplayTop'),
             loggedInUserInfo: document.getElementById('loggedInUserInfo'),
             logoutBtn: document.getElementById('logoutBtn'),
+            clearChatBtn: document.getElementById('clearChatBtn'),
             roomSelectionButtons: document.getElementById('room-selection-buttons'),
             publicChatBtn: document.getElementById('publicChatBtn'),
             privateChatBtn: document.getElementById('privateChatBtn'),
@@ -112,14 +145,23 @@
             roomsModal: document.getElementById('rooms-modal'),
             closeButton: document.querySelector('#rooms-modal .close-button'),
             savedRoomsList: document.getElementById('saved-rooms-list'),
-            // নতুন UI উপাদান
             onlineUsersList: document.getElementById('online-users-list'),
             typingIndicator: document.getElementById('typing-indicator'),
-             clearChatBtn: document.getElementById('clearChatBtn'),
-            showOnlineUsersBtn: document.getElementById('showOnlineUsersBtn'),
-            onlineUsersModal: document.getElementById('online-users-modal'),
-            onlineUsersListModal: document.getElementById('online-users-list-modal'),
-            onlineUsersModalCloseBtn: document.querySelector('#online-users-modal .close-button')
+            hamburgerMenu: document.getElementById('hamburger-menu'),
+            menuOverlay: document.getElementById('menu-overlay'),
+            sidebar: document.getElementById('sidebar'),
+            profileModal: document.getElementById('profile-modal'),
+            profileModalCloseBtn: document.querySelector('#profile-modal .close-button'),
+            avatarOptions: document.querySelector('.avatar-options'),
+            userProfileInfo: document.getElementById('user-profile-info'),
+            userAvatarTop: document.getElementById('user-avatar-top'),
+            statusInput: document.getElementById('status-input'),
+            saveStatusBtn: document.getElementById('save-status-btn'),
+			viewProfileModal: document.getElementById('view-profile-modal'),
+    viewProfileModalCloseBtn: document.querySelector('#view-profile-modal .close-button'),
+    profileViewAvatar: document.getElementById('profile-view-avatar'),
+    profileViewUsername: document.getElementById('profile-view-username'),
+    profileViewStatus: document.getElementById('profile-view-status')
         };
 
         let username = '';
@@ -143,22 +185,30 @@
                 UI_ELEMENTS.guestBtn.style.display = 'none';
             } else if (state === 'chat') {
                 UI_ELEMENTS.mainChatContent.style.display = 'flex';
-                UI_ELEMENTS.loggedInUserInfo.textContent = `স্বাগতম, ${username}!`;
+                UI_ELEMENTS.loggedInUserInfo.textContent = `${username}`;
                 UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
+                const avatar = localStorage.getItem('avatar');
+                if (avatar) UI_ELEMENTS.userAvatarTop.src = avatar;
             }
         };
 
         async function apiRequest(endpoint, body) {
             try {
+                const token = localStorage.getItem('token');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
                 const res = await fetch(endpoint, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(body)
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Something went wrong');
                 return { ok: true, data };
             } catch (error) {
+                console.error('API Request Error:', error);
                 return { ok: false, data: { message: error.message || 'সার্ভার ত্রুটি।' } };
             }
         };
@@ -168,9 +218,14 @@
             localStorage.setItem('username', data.username);
             localStorage.setItem('userId', data.userId);
             localStorage.setItem('userType', 'registered');
+            localStorage.setItem('avatar', data.avatar);
+            if (data.status) localStorage.setItem('status', data.status);
             authenticateSocket();
         };
 
+        UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
+        UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
+        
         UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
             const body = { username: UI_ELEMENTS.loginUsername.value.trim(), password: UI_ELEMENTS.loginPassword.value.trim() };
             if (!body.username || !body.password) return alert('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।');
@@ -184,9 +239,6 @@
             const { ok, data } = await apiRequest('/api/register', body);
             if (ok) { alert(data.message); handleAuthSuccess(data); } else { alert(data.message); }
         });
-        
-        UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
-        UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
 
         UI_ELEMENTS.guestBtn.addEventListener('click', () => {
             localStorage.removeItem('token');
@@ -195,19 +247,57 @@
         });
 
         UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
-            ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms'].forEach(key => localStorage.removeItem(key));
+            ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms', 'avatar', 'status'].forEach(key => localStorage.removeItem(key));
             socket.disconnect().connect();
             setUIState('login');
         });
 
         UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
-    // ব্যবহারকারীকে সতর্ক করা হচ্ছে
-    if (confirm('আপনি কি সত্যিই এই রুমের সব মেসেজ সবার জন্য স্থায়ীভাবে মুছে ফেলতে চান? এই কাজটি ফিরিয়ে আনা সম্ভব নয়।')) {
-        // সার্ভারকে চ্যাট ক্লিয়ার করার জন্য অনুরোধ পাঠানো হচ্ছে
-        socket.emit('clear room chat', { roomCode: currentRoom });
-    }
-});
-      
+            if (confirm('আপনি কি এই রুমের সব মেসেজ সবার জন্য স্থায়ীভাবে মুছে ফেলতে চান? এই কাজটি ফিরিয়ে আনা সম্ভব নয়।')) {
+                socket.emit('clear room chat', { roomCode: currentRoom });
+            }
+        });
+
+        UI_ELEMENTS.userProfileInfo.addEventListener('click', () => {
+            UI_ELEMENTS.statusInput.value = localStorage.getItem('status') || '';
+            UI_ELEMENTS.profileModal.style.display = 'flex';
+        });
+
+        UI_ELEMENTS.profileModalCloseBtn.addEventListener('click', () => {
+            UI_ELEMENTS.profileModal.style.display = 'none';
+        });
+
+        UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('avatar-choice')) {
+                const newAvatar = e.target.dataset.avatar;
+                const { ok, data } = await apiRequest('/api/user/avatar', { avatar: newAvatar });
+                if (ok) {
+                    localStorage.setItem('avatar', data.avatar);
+                    UI_ELEMENTS.userAvatarTop.src = data.avatar;
+                    alert('অ্যাভাটার সফলভাবে পরিবর্তিত হয়েছে!');
+                } else {
+                    alert(`অ্যাভাটার পরিবর্তন করতে সমস্যা হয়েছে: ${data.message}`);
+                }
+            }
+        });
+
+        UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
+            const newStatus = UI_ELEMENTS.statusInput.value.trim();
+            if (!newStatus) return alert('স্ট্যাটাস খালি রাখা যাবে না।');
+            UI_ELEMENTS.saveStatusBtn.disabled = true;
+            UI_ELEMENTS.saveStatusBtn.textContent = 'সেভিং...';
+            const { ok, data } = await apiRequest('/api/user/status', { status: newStatus });
+            if (ok) {
+                localStorage.setItem('status', data.status);
+                alert('স্ট্যাটাস সফলভাবে আপডেট হয়েছে!');
+                UI_ELEMENTS.profileModal.style.display = 'none';
+            } else {
+                alert(`স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${data.message}`);
+            }
+            UI_ELEMENTS.saveStatusBtn.disabled = false;
+            UI_ELEMENTS.saveStatusBtn.textContent = 'স্ট্যাটাস সেভ করুন';
+        });
+
         function displayMessage(data) {
             const item = document.createElement('li');
             item.dataset.messageId = data._id;
@@ -217,11 +307,13 @@
                 buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="Edit">✏️</button><button class="delete-btn" title="Delete">🗑️</button></div>`;
             }
             const editedIndicator = data.isEdited && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' ? `<small class="edited-indicator">(edited)</small>` : '';
-            item.innerHTML = `<div><b>${data.username}:</b> <span class="message-text">${data.message}</span>${editedIndicator}</div>${buttonsHTML}<small class="timestamp">${data.timestamp}</small>`;
+            item.innerHTML = `<img src="${data.avatar || 'avatars/avatar1.png'}" class="chat-avatar" data-user-id="${data.userId}"><div class="message-content"><div><b>${data.username}:</b> <span class="message-text">${data.message}</span>${editedIndicator}</div>${buttonsHTML}<small class="timestamp">${data.timestamp}</small></div>`;
             UI_ELEMENTS.messages.appendChild(item);
-            UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
+            if (UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
+                 UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
+            }
         };
-
+        
         function joinRoom(roomName) {
             currentRoom = roomName;
             UI_ELEMENTS.currentRoomDisplayTop.textContent = `আপনি ${currentRoom === 'public' ? 'পাবলিক চ্যাটে' : currentRoom + ' রুমে'} আছেন`;
@@ -254,7 +346,7 @@
                 UI_ELEMENTS.savedRoomsList.appendChild(li);
             });
         };
-
+        
         function authenticateSocket(guestId = null) {
             socket.emit('authenticate', { token: localStorage.getItem('token'), guestId }, (res) => {
                 if (res.success) {
@@ -262,6 +354,8 @@
                     userType = res.type;
                     localStorage.setItem('userId', res.userId);
                     localStorage.setItem('username', res.username);
+                    if (res.avatar) localStorage.setItem('avatar', res.avatar);
+                    if (res.status) localStorage.setItem('status', res.status);
                     setUIState('chat');
                     const savedRoom = localStorage.getItem('lastRoom') || 'public';
                     joinRoom(savedRoom);
@@ -285,6 +379,7 @@
             UI_ELEMENTS.privateCodeSection.style.display = 'none';
             joinRoom('public');
         });
+
         UI_ELEMENTS.privateChatBtn.addEventListener('click', () => {
             UI_ELEMENTS.privateChatBtn.classList.add('active');
             UI_ELEMENTS.publicChatBtn.classList.remove('active');
@@ -313,30 +408,22 @@
             });
         });
 
-        UI_ELEMENTS.form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const message = UI_ELEMENTS.input.value.trim();
-            if (message) {
-                socket.emit('chat message', { message, room: currentRoom, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                UI_ELEMENTS.input.value = '';
-            }
-        });
+      // index.html -> <script> -> UI_ELEMENTS.form.addEventListener(...)
 
-        UI_ELEMENTS.messages.addEventListener('click', (e) => {
-            const messageLi = e.target.closest('li[data-message-id]');
-            if (!messageLi) return;
-            const messageId = messageLi.dataset.messageId;
-            if (e.target.classList.contains('delete-btn') && confirm('আপনি কি মেসেজটি মুছে ফেলতে চান?')) {
-                socket.emit('delete message', { messageId });
-            }
-            if (e.target.classList.contains('edit-btn')) {
-                const textElem = messageLi.querySelector('.message-text');
-                const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
-                if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
-                    socket.emit('edit message', { messageId, newMessageText: newText });
-                }
-            }
+UI_ELEMENTS.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = UI_ELEMENTS.input.value.trim();
+    if (message) {
+        // ভুল কোডটি (অ্যাভাটারসহ) মুছে ফেলা হয়েছে
+        socket.emit('chat message', { 
+            message, 
+            room: currentRoom, 
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         });
+        UI_ELEMENTS.input.value = '';
+    }
+});
+        
 
         let typingIndicatorTimer;
         UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
@@ -349,23 +436,36 @@
             }
         });
 
-        function renderOnlineUserList(users) {
-            const uniqueUsers = [...new Map(users.map(item => [item.userId, item])).values()];
-            const listHtml = uniqueUsers.map(user => 
-                `<li class="online-user"><span class="online-status-dot"></span> ${user.username}</li>`
-            ).join('');
-            UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
-            UI_ELEMENTS.onlineUsersListModal.innerHTML = listHtml;
-        }
+        // পুরোনো socket.on('online users list', ...) ফাংশনটি এটি দিয়ে প্রতিস্থাপন করুন
 
-        socket.on('online users list', renderOnlineUserList);
-        socket.on('previous messages', (msgs) => { UI_ELEMENTS.messages.innerHTML = ''; msgs.forEach(displayMessage); });
-        socket.on('chat message', displayMessage);
+socket.on('online users list', (users) => {
+    const uniqueUsers = [...new Map(users.map(item => [item.userId, item])).values()];
+    const listHtml = uniqueUsers.map(user => 
+        // li ট্যাগে data-user-id যোগ করা হয়েছে
+        `<li class="online-user" data-user-id="${user.userId}">
+            <span class="online-status-dot"></span> ${user.username}
+         </li>`
+    ).join('');
+    UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
+});
+        
+        socket.on('previous messages', (msgs) => { 
+            UI_ELEMENTS.messages.innerHTML = ''; 
+            msgs.forEach(displayMessage); 
+        });
+
+        socket.on('chat message', (data) => {
+            const new_data = {...data, avatar: data.avatar || localStorage.getItem('avatar')};
+            displayMessage(new_data);
+        });
+
         socket.on('user joined', (msg) => {
              const item = document.createElement('li');
+             item.classList.add('system-message');
              item.innerHTML = `<i>${msg}</i>`;
              UI_ELEMENTS.messages.appendChild(item);
         });
+
         socket.on('message edited', ({ messageId, newMessageText }) => {
             const msgLi = document.querySelector(`li[data-message-id="${messageId}"]`);
             if(msgLi) {
@@ -383,25 +483,156 @@
             }
         });
 
-socket.on('chat cleared', () => {
-    UI_ELEMENTS.messages.innerHTML = ''; // মেসেজ লিস্ট খালি করে দেওয়া হচ্ছে
-    
-    // একটি সিস্টেম মেসেজ দেখানো হচ্ছে
-    const item = document.createElement('li');
-    item.innerHTML = `<i>এই রুমের চ্যাট অ্যাডমিন দ্বারা পরিষ্কার করা হয়েছে।</i>`;
-    UI_ELEMENTS.messages.appendChild(item);
-});
+        socket.on('chat cleared', () => {
+            UI_ELEMENTS.messages.innerHTML = '';
+            const item = document.createElement('li');
+            item.classList.add('system-message');
+            item.innerHTML = `<i>এই রুমের চ্যাট পরিষ্কার করা হয়েছে।</i>`;
+            UI_ELEMENTS.messages.appendChild(item);
+        });
+
+        socket.on('avatar updated', ({ userId, avatar }) => {
+            document.querySelectorAll(`img.chat-avatar[data-user-id="${userId}"]`).forEach(img => {
+                img.src = avatar;
+            });
+            if (localStorage.getItem('userId') === userId) {
+                UI_ELEMENTS.userAvatarTop.src = avatar;
+            }
+        });
+
         socket.on('error', (message) => { alert(message); setUIState('login'); });
 
-        // Modal event listeners
         UI_ELEMENTS.showRoomsBtn.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'flex'; });
         UI_ELEMENTS.closeButton.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'none'; });
         window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'none'; });
+        
+        UI_ELEMENTS.hamburgerMenu.addEventListener('click', () => {
+            UI_ELEMENTS.sidebar.classList.add('sidebar-open');
+            UI_ELEMENTS.menuOverlay.style.display = 'block';
+        });
 
-        UI_ELEMENTS.showOnlineUsersBtn.addEventListener('click', () => { UI_ELEMENTS.onlineUsersModal.style.display = 'flex'; });
-        UI_ELEMENTS.onlineUsersModalCloseBtn.addEventListener('click', () => { UI_ELEMENTS.onlineUsersModal.style.display = 'none'; });
-        window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.onlineUsersModal) UI_ELEMENTS.onlineUsersModal.style.display = 'none'; });
+        UI_ELEMENTS.menuOverlay.addEventListener('click', () => {
+            UI_ELEMENTS.sidebar.classList.remove('sidebar-open');
+            UI_ELEMENTS.menuOverlay.style.display = 'none';
+        });
+		// <script> ট্যাগের শেষে যোগ করুন
 
+// নির্দিষ্ট ইউজারের প্রোফাইল দেখানোর ফাংশন
+async function showUserProfile(userId) {
+    if (!userId) return;
+
+    UI_ELEMENTS.viewProfileModal.style.display = 'flex';
+    // প্রাথমিকভাবে লোডিং টেক্সট দেখানো যেতে পারে
+    UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...';
+    UI_ELEMENTS.profileViewStatus.textContent = '';
+    
+    try {
+        const response = await fetch(`/api/user/${userId}`);
+        const user = await response.json();
+
+        if (response.ok) {
+            UI_ELEMENTS.profileViewAvatar.src = user.avatar;
+            UI_ELEMENTS.profileViewUsername.textContent = user.username;
+            UI_ELEMENTS.profileViewStatus.textContent = user.status;
+        } else {
+            UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার পাওয়া যায়নি';
+        }
+    } catch (error) {
+        UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি';
+    }
+}
+
+// চ্যাট মেসেজের অ্যাভাটার বা অনলাইন লিস্টের ইউজারে ক্লিক করলে প্রোফাইল দেখাবে
+function handleProfileViewClick(event, parentSelector, childSelector) {
+    const parent = event.target.closest(parentSelector);
+    if (parent) {
+        const child = parent.querySelector(childSelector);
+        if (child && child.contains(event.target)) {
+            const userId = parent.dataset.userId;
+            showUserProfile(userId);
+        }
+    }
+}
+
+// ইভেন্ট লিসেনারগুলো যোগ করা
+UI_ELEMENTS.messages.addEventListener('click', (e) => {
+    const messageLi = e.target.closest('li[data-message-id]');
+    if (!messageLi) return;
+
+    // প্রোফাইল দেখার জন্য: অ্যাভাটার ইমেজে ক্লিক করলে কাজ করবে
+    if (e.target.classList.contains('chat-avatar')) {
+        const userId = e.target.dataset.userId;
+        showUserProfile(userId);
+        return; // প্রোফাইল দেখা হলে এই ফাংশনের কাজ এখানেই শেষ
+    }
+
+    // এডিট ও ডিলিট বাটনের জন্য
+    const messageId = messageLi.dataset.messageId;
+    if (e.target.classList.contains('delete-btn') && confirm('আপনি কি মেসেজটি মুছে ফেলতে চান?')) {
+        socket.emit('delete message', { messageId });
+    } else if (e.target.classList.contains('edit-btn')) {
+        const textElem = messageLi.querySelector('.message-text');
+        const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
+        if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
+            socket.emit('edit message', { messageId, newMessageText: newText });
+        }
+    }
+});
+
+UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
+    const userLi = e.target.closest('.online-user');
+    if (userLi) {
+        showUserProfile(userLi.dataset.userId);
+    }
+});
+
+
+// নতুন প্রোফাইল মডাল বন্ধ করার জন্য
+UI_ELEMENTS.viewProfileModalCloseBtn.addEventListener('click', () => {
+    UI_ELEMENTS.viewProfileModal.style.display = 'none';
+});
+
+// <script> ট্যাগের শেষে যোগ করুন
+
+// ইমোজি পিকার চালু করা হচ্ছে
+// <script> ট্যাগের শেষে থাকা পুরোনো ইমোজি কোড মুছে এটি বসান
+
+try {
+    const emojiBtn = document.getElementById('emoji-btn');
+    const messageInput = document.getElementById('input');
+
+    // window অবজেক্ট থেকে EmojiButton নেওয়া হচ্ছে
+    const picker = new window.EmojiButton({
+        position: 'top-start',
+        theme: 'light',
+        autoHide: true
+    });
+
+    // ডিবাগ করার জন্য: picker অবজেক্টে কী কী আছে তা দেখা
+    console.log('Emoji Picker Object:', picker);
+
+   // পুরোনো picker.on(...) ব্লক মুছে এটি বসান
+
+picker.on('emoji', selection => {
+    // এখানে selection নিজেই হলো ইমোজি, তাই .emoji আর প্রয়োজন নেই
+    messageInput.value += selection;
+});
+
+    // emojiBtn-এর পুরোনো addEventListener মুছে এটি বসান
+
+emojiBtn.addEventListener('click', () => {
+    // লাইব্রেরির নতুন নিয়ম অনুযায়ী, আমরা এখন এর visibility চেক করে show/hide করব
+    // picker.pickerVisible প্রপার্টিটি আমাদের বলে দেয় পিকারটি দেখা যাচ্ছে কিনা
+    if (picker.pickerVisible) {
+        picker.hidePicker();
+    } else {
+        picker.showPicker(emojiBtn);
+    }
+});
+} catch (error) {
+    console.error('ইমোজি পিকার চালু করতে সমস্যা হয়েছে:', error);
+    alert('দুঃখিত, ইমোজি পিকার লোড করা সম্ভব হচ্ছে না।');
+}
     </script>
 </body>
 </html>
