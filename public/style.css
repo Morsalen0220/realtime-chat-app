@@ -284,19 +284,87 @@ body {
     overflow-y: auto;
     background-color: #f8f9fa;
 }
-#messages > li {
+/* পুরোনো স্টাইলের জায়গায় এই নতুন কোডটি বসান */
+
+/* মেসেজ কন্টেইনারের জন্য বেসিক স্টাইল */
+#messages {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    padding: 10px;
+}
+
+/* সব মেসেজের জন্য কমন স্টাইল */
+.message {
+    display: flex;
     gap: 10px;
-    padding: 10px 15px;
     margin-bottom: 10px;
-    border-radius: 15px;
-    background-color: #e0e5ec;
-    box-shadow: 2px 2px 5px rgba(163, 177, 198, 0.6), -2px -2px 5px rgba(255, 255, 255, 0.8);
-    line-height: 1.4;
+    max-width: 75%;
+}
+
+.message .chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.message .message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
     position: relative;
 }
+
+.message .message-content b {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* অন্যের মেসেজের স্টাইল (বাম দিকে, সাদা) */
+.message.theirs {
+    align-self: flex-start;
+}
+
+.message.theirs .message-content {
+    background-color: #ffffff;
+    border: 1px solid #e9e9eb;
+    border-bottom-left-radius: 4px;
+}
+
+/* আমার মেসেজের স্টাইল (ডান দিকে, সবুজ) */
+.message.mine {
+    align-self: flex-end;
+    flex-direction: row-reverse; /* অ্যাভাটার এবং টেক্সট উল্টে যাবে */
+}
+
+.message.mine .message-content {
+    background-color: #dcf8c6; /* হোয়াটসঅ্যাপের মতো সবুজ */
+    border-bottom-right-radius: 4px;
+}
+
+.message.mine .message-content b {
+    display: none; /* নিজের মেসেজে নিজের নাম দেখানোর প্রয়োজন নেই */
+}
+
+/* সিস্টেম মেসেজের স্টাইল (মাঝখানে, ধূসর) */
+.message.system {
+    align-self: center;
+    background-color: #f0f2f5;
+    color: #657786;
+    font-size: 0.85em;
+    font-style: italic;
+    padding: 5px 12px;
+    border-radius: 15px;
+    max-width: fit-content;
+}
+.message.system .chat-avatar {
+    display: none; /* সিস্টেম মেসেজে অ্যাভাটার থাকবে না */
+}
+
+/* পুরোনো অন্যান্য স্টাইল অপরিবর্তিত থাকবে */
+#messages > li > div { flex-grow: 1; word-wrap: break-word; }
+.timestamp { font-size: 0.7em; color: #888; position: absolute; bottom: 5px; right: 10px; }
 #messages > li > div { flex-grow: 1; word-wrap: break-word; }
 #messages > li b { color: #007bff; font-weight: 600; margin-right: 8px; }
 .timestamp { font-size: 0.7em; color: #888; position: absolute; bottom: 5px; right: 10px; }
@@ -570,6 +638,96 @@ body {
 }
 .emoji-picker__emojis::-webkit-scrollbar-thumb {
   background-color: #b0c4de;
+}
+/* style.css ফাইলের শেষে যোগ করুন */
+
+.message-content {
+    cursor: pointer; /* ক্লিক করা যাবে বোঝানোর জন্য */
+}
+
+.reaction-palette {
+    display: flex;
+    gap: 5px;
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    position: absolute; /* মেসেজের উপরে দেখানোর জন্য */
+    margin-top: -45px;
+}
+
+.reaction-choice {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.reaction-choice:hover {
+    transform: scale(1.2);
+}
+
+.message-reactions {
+    margin-top: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.reaction-display {
+    background-color: #d1e7fd;
+    border: 1px solid #a6cffc;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.8em;
+    cursor: pointer;
+}
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.4s ease-in-out;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification.success {
+    background-color: #28a745; /* সবুজ রঙ */
+}
+
+.notification.error {
+    background-color: #dc3545; /* লাল রঙ */
+}
+/* public/style.css ফাইলের শেষে যোগ করুন */
+
+.online-user {
+    gap: 5px; /* অ্যাভাটার এবং নামের মধ্যে কিছুটা ফাঁক */
+}
+
+.online-user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%; /* ছবিটি গোল করার জন্য */
+    object-fit: cover; /* ছবিটি যেন সুন্দরভাবে বসে যায় */
+    flex-shrink: 0; /* যেন ছবিটি ছোট না হয়ে যায় */
 }
 
 @media (max-width: 480px) {

@@ -27,6 +27,11 @@ const messageSchema = new mongoose.Schema({
     room: { type: String, default: 'public' },
     userId: { type: String, required: true },
     avatar: { type: String, default: 'avatars/avatar1.png' },
+	reactions: [{
+        emoji: { type: String, required: true },
+        userId: { type: String, required: true },
+        username: { type: String, required: true }
+    }],
     isGuest: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
@@ -207,6 +212,42 @@ io.on('connection', (socket) => {
             console.error('Error fetching messages:', err);
         }
     });
+	// index.js -> io.on('connection', ...) এর ভেতরে
+
+socket.on('message reaction', async ({ messageId, emoji }) => {
+    try {
+        const message = await Message.findById(messageId);
+        if (!message) return;
+
+        // চেক করা হচ্ছে ইউজারটি আগে এই ইমোজি দিয়ে রিয়্যাক্ট করেছে কিনা
+        const existingReactionIndex = message.reactions.findIndex(
+            r => r.userId === socket.userId && r.emoji === emoji
+        );
+
+        if (existingReactionIndex > -1) {
+            // যদি আগে একই রিয়্যাকশন দিয়ে থাকে, তবে সেটি তুলে নেওয়া হবে (un-react)
+            message.reactions.splice(existingReactionIndex, 1);
+        } else {
+            // নতুন রিয়্যাকশন যোগ করা হচ্ছে
+            message.reactions.push({
+                emoji: emoji,
+                userId: socket.userId,
+                username: socket.username
+            });
+        }
+        
+        await message.save();
+
+        // রুমের সবাইকে আপডেটেড রিয়্যাকশন লিস্ট পাঠানো হচ্ছে
+        io.to(message.room).emit('reactions updated', {
+            messageId: message._id,
+            reactions: message.reactions
+        });
+
+    } catch (error) {
+        console.error('রিয়্যাকশন যোগ করতে সমস্যা:', error);
+    }
+});
 
     socket.on('chat message', async (data) => {
         if (!socket.userId) return;
