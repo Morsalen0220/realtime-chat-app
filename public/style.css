@@ -413,6 +413,35 @@ body {
     outline: none;
 }
 #form > button {
+<<<<<<< HEAD
+    background-color: #007bff; /* তোমার পছন্দের বেসিক রঙ */
+    color: white;
+    padding: 12px 20px;
+    border: none; /* কোনো বর্ডার থাকবে না */
+    border-radius: 25px; /* গোল বাটন */
+    font-size: 1.2em; /* আইকনের আকার */
+    cursor: pointer;
+    
+    /* নিওমরফিক শ্যাডো যোগ করা হচ্ছে */
+    box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6),
+                -3px -3px 6px rgba(255, 255, 255, 0.8);
+    
+    transition: all 0.3s ease; /* হোভার ইফেক্টের জন্য ট্রানজিশন */
+    
+    /* আইকনকে সেন্টারে আনতে */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1; /* যদি আইকনটি উল্লম্বভাবে অফ-সেন্টার মনে হয় */
+}
+
+#form > button:hover {
+    background-color: #0056b3; /* হোভার করার সময় একটু গাঢ় রঙ */
+    /* হোভার করার সময় ইনসেট শ্যাডো */
+    box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+=======
     background-color: #007bff;
     color: white;
     padding: 12px 20px;
@@ -424,6 +453,7 @@ body {
 }
 #form > button:hover { background-color: #0056b3; }
 
+>>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 .modal {
     display: none;
     position: fixed;

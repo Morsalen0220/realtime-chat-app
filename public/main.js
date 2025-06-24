@@ -82,6 +82,34 @@ let username = '';
 let currentRoom = '';
 let userType = 'guest';
 
+<<<<<<< HEAD
+// ইমোজি পিকারের জন্য নতুন কোড
+const emojiBtn = document.getElementById('emoji-btn');
+const messageInput = document.getElementById('input'); // তোমার মেসেজ ইনপুট ফিল্ডের আইডি
+
+if (emojiBtn && messageInput) {
+    const picker = new EmojiButton({
+        position: 'top-start', // পিকারটি বাটনের উপরে বাম দিকে দেখাবে
+        theme: 'auto', // সিস্টেম থিম (লাইট/ডার্ক) অনুসরণ করবে
+        showSearch: true, // সার্চ বার দেখাবে
+        showRecents: true, // সাম্প্রতিক ব্যবহৃত ইমোজি দেখাবে
+        showVariants: true // ইমোজি ভ্যারিয়েন্ট দেখাবে (যেমন স্কিন টোন)
+    });
+
+    picker.on('emoji', emoji => {
+        messageInput.value += emoji; // নির্বাচিত ইমোজি ইনপুট ফিল্ডে যোগ করবে
+        messageInput.focus(); // ইনপুট ফিল্ডে ফোকাস রাখবে
+    });
+
+    // main.js, লাইন 104 (সংশোধিত, টগল কার্যকারিতার জন্য)
+emojiBtn.addEventListener('click', () => {
+    picker.showPicker(emojiBtn); // বাটনে ক্লিক করলে পিকার দেখাবে/লুকাবে (যদি লাইব্রেরি সমর্থন করে)
+});
+}
+
+
+=======
+>>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 function setUIState(state) {
     UI_ELEMENTS.authOverlay.style.display = 'none';
     UI_ELEMENTS.mainChatContent.style.display = 'none';
@@ -441,6 +469,22 @@ async function showUserProfile(userId) {
 
 let typingIndicatorTimer;
 UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
+<<<<<<< HEAD
+// main.js ফাইলের socket.on('online users list', (users) => { ... }); ব্লকের ঠিক পরে যোগ করুন
+
+// অনলাইন ব্যবহারকারীদের তালিকায় ক্লিক ইভেন্ট লিসেনার যোগ করা হয়েছে
+UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
+    const targetUserElement = e.target.closest('.online-user');
+    // নিশ্চিত করুন যে ক্লিকটি একটি প্রকৃত ব্যবহারকারীর আইটেমের উপর পড়েছে, তালিকার ব্যাকগ্রাউন্ডে নয়
+    if (targetUserElement) {
+        const userId = targetUserElement.dataset.userId;
+        if (userId) { // নিশ্চিত করুন userId আছে
+            showUserProfile(userId);
+        }
+    }
+});
+=======
+>>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 
 socket.on('user typing', ({ username: typingUsername }) => {
     if (typingUsername !== username) {

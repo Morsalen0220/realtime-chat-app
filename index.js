@@ -268,6 +268,50 @@ socket.on('message reaction', async ({ messageId, emoji }) => {
             console.error('Error saving message:', err);
         }
     });
+<<<<<<< HEAD
+	// index.js (io.on('connection', (socket) => { ... }); এর ভিতরে)
+
+    // রুম বিদ্যমান কিনা চেক করার জন্য
+    socket.on('check room existence', async (roomCode, callback) => {
+        try {
+            // MongoDB তে রুমের মেসেজ আছে কিনা চেক করে
+            const roomExists = await Message.exists({ room: roomCode });
+            callback(roomExists);
+        } catch (error) {
+            console.error('Error checking room existence:', error);
+            callback(false); // ত্রুটি হলে রুম বিদ্যমান নয়
+        }
+    });
+
+    // নতুন প্রাইভেট রুম তৈরি করার জন্য
+    socket.on('create private room', async (roomCode, username, callback) => {
+        try {
+            // প্রথমে রুমটি বিদ্যমান কিনা চেক করা হচ্ছে
+            const roomExists = await Message.exists({ room: roomCode });
+            if (roomExists) {
+                return callback({ success: false, message: 'এই প্রাইভেট রুম কোডটি ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ব্যবহার করুন।' });
+            }
+
+            // একটি স্বাগত মেসেজ তৈরি করে রুমে যোগ করা হচ্ছে
+            const welcomeMessage = new Message({
+                username: "System",
+                message: `${username} একটি নতুন প্রাইভেট রুম "${roomCode}" তৈরি করেছে!`,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                room: roomCode,
+                userId: "system-message", // সিস্টেম মেসেজের জন্য একটি বিশেষ userId
+                avatar: "avatars/avatar1.png", // সিস্টেম মেসেজের জন্য একটি ডিফল্ট অ্যাভাটার
+                isGuest: false // সিস্টেম মেসেজ গেস্ট নয়
+            });
+            await welcomeMessage.save();
+
+            callback({ success: true, message: 'সফলভাবে নতুন প্রাইভেট রুম তৈরি হয়েছে!' });
+        } catch (error) {
+            console.error('Error creating private room:', error);
+            callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
+        }
+    });
+=======
+>>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 
     socket.on('delete message', async ({ messageId }) => {
         try {
