@@ -13,8 +13,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.DATABASE_URL;
-const JWT_SECRET = process.env.JWT_SECRET;
+const MONGODB_URI = process.env.DATABASE_URL; // .env থেকে লোড হবে
+const JWT_SECRET = process.env.JWT_SECRET; // .env থেকে লোড হবে
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('MongoDB সংযুক্ত হয়েছে!'))
@@ -67,6 +67,7 @@ app.post('/api/register', async (req, res) => {
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({ message: 'সফলভাবে নিবন্ধিত হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status });
     } catch (error) {
+        console.error('Registration error:', error); // রেজিস্ট্রেশন ত্রুটি লগ করুন
         res.status(500).json({ message: 'সার্ভার ত্রুটি।' });
     }
 });
@@ -80,10 +81,12 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ message: 'সফলভাবে লগইন হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status });
     } catch (error) {
+        console.error('Login error:', error); // লগইন ত্রুটি লগ করুন
         res.status(500).json({ message: 'সার্ভার ত্রুটি।' });
     }
 });
 
+// অ্যাভাটার পরিবর্তন হ্যান্ডেল করার রুট
 app.post('/api/user/avatar', protect, async (req, res) => {
     try {
         const { avatar } = req.body;
@@ -91,12 +94,31 @@ app.post('/api/user/avatar', protect, async (req, res) => {
         if (user) {
             user.avatar = avatar;
             await user.save();
+
+            // এখানে নতুন কোড: ব্যবহারকারীর সক্রিয় সকেটের অ্যাভাটার আপডেট করা
+            io.of('/').sockets.forEach(s => {
+                if (s.userId === user._id.toString()) {
+                    s.avatar = user.avatar; // সকেটের অ্যাভাটার প্রপার্টি আপডেট করা
+                    // onlineUsers ম্যাপেও অ্যাভাটার আপডেট করা যদি প্রয়োজন হয় (যদি ম্যাপে অ্যাভাটার ব্যবহার করা হয়)
+                    if (onlineUsers.has(s.id)) {
+                        const userInMap = onlineUsers.get(s.id);
+                        userInMap.avatar = user.avatar;
+                        onlineUsers.set(s.id, userInMap);
+                    }
+                }
+            });
+
+            // অনলাইন ইউজারের তালিকা রি-এমিট করা (অন্যান্য ক্লায়েন্টের সাইডবার অ্যাভাটার আপডেট করার জন্য)
+            io.emit('online users list', Array.from(onlineUsers.values()));
+            // সমস্ত ক্লায়েন্টকে অ্যাভাটার আপডেটের ইভেন্ট পাঠানো (বিদ্যমান মেসেজের অ্যাভাটার আপডেট করার জন্য)
             io.emit('avatar updated', { userId: user._id, avatar: user.avatar });
+            
             res.json({ message: 'Avatar updated successfully', avatar: user.avatar });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
+        console.error('Avatar update error:', error); // অ্যাভাটার আপডেট ত্রুটি লগ করুন
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -113,6 +135,7 @@ app.post('/api/user/status', protect, async (req, res) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
+        console.error('Status update error:', error); // স্ট্যাটাস আপডেট ত্রুটি লগ করুন
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -136,6 +159,7 @@ app.get('/api/user/:userId', async (req, res) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
+        console.error('Get user profile error:', error); // ইউজার প্রোফাইল ত্রুটি লগ করুন
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -162,7 +186,7 @@ io.on('connection', (socket) => {
                     if (authUser) {
                         socket.userId = authUser._id.toString();
                         socket.username = authUser.username;
-                        socket.avatar = authUser.avatar;
+                        socket.avatar = authUser.avatar; // অথেনটিকেশনের সময় অ্যাভাটার সেট করা
                         socket.status = authUser.status;
                         authType = 'registered';
                     }
@@ -174,7 +198,7 @@ io.on('connection', (socket) => {
             if (authType === 'guest') {
                 socket.userId = guestId || `guest-${Math.random().toString(36).substring(2, 9)}`;
                 socket.username = `Guest-${socket.userId.substring(6, 10)}`;
-                socket.avatar = 'avatars/avatar1.png';
+                socket.avatar = 'avatars/avatar1.png'; // অতিথি হিসেবে অ্যাভাটার সেট করা
                 socket.status = 'আমি একজন অতিথি ব্যবহারকারী।';
             }
 
@@ -258,7 +282,7 @@ io.on('connection', (socket) => {
                 timestamp,
                 room,
                 userId: socket.userId,
-                avatar: socket.avatar,
+                avatar: socket.avatar, // এখান থেকে সকেটের বর্তমান অ্যাভাটার নেওয়া হবে
                 isGuest: socket.userId.startsWith('guest-')
             });
             await newMessage.save();
