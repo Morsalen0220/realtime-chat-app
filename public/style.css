@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
+/* গ্লোবাল বক্স মডেল রিসেট */
+* {
+    box-sizing: border-box; /* সমস্ত উপাদানের জন্য বক্স সাইজিং বর্ডার-বক্স সেট করা হয়েছে */
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -19,7 +24,7 @@ body {
                 -10px -10px 20px rgba(255, 255, 255, 0.8);
     width: 95%;
     max-width: 900px; /* সাইডবার যোগ করার জন্য প্রস্থ বাড়ানো হয়েছে */
-    height: 90vh; 
+    height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -226,7 +231,7 @@ body {
 }
 
 #currentRoomDisplayTop { margin-left: 15px; }
-#loggedInUserInfo { font-size: 0.9em; margin-left: auto; color: #e0e5ec; }
+#loggedInUserInfo { font-size: 0.9em; margin-left: auto; color: #e0e5ec; word-wrap: break-word; /* লম্বা ইউজারনেমের জন্য */ }
 
 #room-selection-buttons, #private-code-section {
     display: flex;
@@ -299,7 +304,22 @@ body {
     gap: 10px;
     margin-bottom: 10px;
     max-width: 75%;
+    opacity: 0; /* প্রাথমিকভাবে অদৃশ্য */
+    transform: translateY(10px); /* নিচে থেকে স্লাইড হবে */
+    animation: fadeInSlideUp 0.3s forwards; /* অ্যানিমেশন যোগ করুন */
 }
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 
 .message .chat-avatar {
     width: 40px;
@@ -365,7 +385,6 @@ body {
 /* পুরোনো অন্যান্য স্টাইল অপরিবর্তিত থাকবে */
 #messages > li > div { flex-grow: 1; word-wrap: break-word; }
 .timestamp { font-size: 0.7em; color: #888; position: absolute; bottom: 5px; right: 10px; }
-#messages > li > div { flex-grow: 1; word-wrap: break-word; }
 #messages > li b { color: #007bff; font-weight: 600; margin-right: 8px; }
 .timestamp { font-size: 0.7em; color: #888; position: absolute; bottom: 5px; right: 10px; }
 #messages > li i { font-style: normal; color: #1e7e34; font-weight: 500; }
@@ -382,7 +401,7 @@ body {
 }
 .edit-btn:hover, .delete-btn:hover { background-color: #d1d9e6; }
 .edited-indicator { font-size: 0.75em; color: #888; margin-left: 5px; }
-.message-text { white-space: pre-wrap; }
+.message-text { white-space: pre-wrap; word-wrap: break-word; /* লম্বা মেসেজের জন্য */ }
 
 #typing-indicator {
     padding: 0 15px 5px;
@@ -413,7 +432,6 @@ body {
     outline: none;
 }
 #form > button {
-<<<<<<< HEAD
     background-color: #007bff; /* তোমার পছন্দের বেসিক রঙ */
     color: white;
     padding: 12px 20px;
@@ -434,26 +452,13 @@ body {
     align-items: center;
     line-height: 1; /* যদি আইকনটি উল্লম্বভাবে অফ-সেন্টার মনে হয় */
 }
-
 #form > button:hover {
     background-color: #0056b3; /* হোভার করার সময় একটু গাঢ় রঙ */
     /* হোভার করার সময় ইনসেট শ্যাডো */
     box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6),
                 inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
-=======
-    background-color: #007bff;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 25px;
-    font-size: 1em;
-    cursor: pointer;
-    box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.8);
-}
-#form > button:hover { background-color: #0056b3; }
 
->>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 .modal {
     display: none;
     position: fixed;
@@ -474,7 +479,23 @@ body {
     position: relative;
     width: 80%;
     max-width: 400px;
+    /* মোডাল হেডারের স্টাইল যোগ করা হয়েছে, যদি profile-modal h2 না থাকে */
+    word-wrap: break-word; /* মোডাল কন্টেন্টের ভিতরে থাকা লম্বা টেক্সটের জন্য */
 }
+/* প্রোফাইল সেটিংস মোডালের হেডারের জন্য নিশ্চিত স্টাইল */
+#profile-modal .modal-content h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em; /* একটু বড় ফন্ট */
+    font-weight: 600;
+    word-wrap: break-word; /* লম্বা নামের জন্য */
+}
+#view-profile-modal .modal-content h2 { /* View Profile Modal-এর ইউজারনেমের জন্য */
+    word-wrap: break-word; /* লম্বা ইউজারনেমের জন্য */
+}
+
+
 .close-button {
     color: #aaa;
     position: absolute;
@@ -630,12 +651,13 @@ body {
 #profile-details h2 {
     margin: 15px 0 5px;
     font-weight: 600;
+    word-wrap: break-word; /* লম্বা ইউজারনেমের জন্য */
 }
 #profile-details p {
     margin: 0;
     color: #666;
     font-size: 0.95em;
-    word-wrap: break-word;
+    word-wrap: break-word; /* লম্বা স্ট্যাটাসের জন্য */
 }
 /* public/style.css ফাইলের শেষে যোগ করুন */
 
@@ -766,4 +788,8 @@ body {
     #form { flex-direction: column; }
     #input { width: calc(100% - 30px); margin-bottom: 10px; }
     #form > button { width: 100%; }
+    .modal-content {
+        width: 95%; /* ছোট স্ক্রিনের জন্য মোডালের প্রস্থ বাড়ানো হয়েছে */
+        padding: 15px; /* প্যাডিং কমানো হয়েছে */
+    }
 }

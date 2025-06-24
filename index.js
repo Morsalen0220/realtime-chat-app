@@ -13,8 +13,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.DATABASE_URL || 'mongodb+srv://Morsalen02200:62783339@chatapp.kxfe1i3.mongodb.net/?retryWrites=true&w=majority&appName=chatapp';
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_strong_secret_key_change_this_in_production';
+const MONGODB_URI = process.env.DATABASE_URL;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('MongoDB সংযুক্ত হয়েছে!'))
@@ -212,42 +212,41 @@ io.on('connection', (socket) => {
             console.error('Error fetching messages:', err);
         }
     });
-	// index.js -> io.on('connection', ...) এর ভেতরে
 
-socket.on('message reaction', async ({ messageId, emoji }) => {
-    try {
-        const message = await Message.findById(messageId);
-        if (!message) return;
+    socket.on('message reaction', async ({ messageId, emoji }) => {
+        try {
+            const message = await Message.findById(messageId);
+            if (!message) return;
 
-        // চেক করা হচ্ছে ইউজারটি আগে এই ইমোজি দিয়ে রিয়্যাক্ট করেছে কিনা
-        const existingReactionIndex = message.reactions.findIndex(
-            r => r.userId === socket.userId && r.emoji === emoji
-        );
+            // চেক করা হচ্ছে ইউজারটি আগে এই ইমোজি দিয়ে রিয়্যাক্ট করেছে কিনা
+            const existingReactionIndex = message.reactions.findIndex(
+                r => r.userId === socket.userId && r.emoji === emoji
+            );
 
-        if (existingReactionIndex > -1) {
-            // যদি আগে একই রিয়্যাকশন দিয়ে থাকে, তবে সেটি তুলে নেওয়া হবে (un-react)
-            message.reactions.splice(existingReactionIndex, 1);
-        } else {
-            // নতুন রিয়্যাকশন যোগ করা হচ্ছে
-            message.reactions.push({
-                emoji: emoji,
-                userId: socket.userId,
-                username: socket.username
+            if (existingReactionIndex > -1) {
+                // যদি আগে একই রিয়্যাকশন দিয়ে থাকে, তবে সেটি তুলে নেওয়া হবে (un-react)
+                message.reactions.splice(existingReactionIndex, 1);
+            } else {
+                // নতুন রিয়্যাকশন যোগ করা হচ্ছে
+                message.reactions.push({
+                    emoji: emoji,
+                    userId: socket.userId,
+                    username: socket.username
+                });
+            }
+            
+            await message.save();
+
+            // রুমের সবাইকে আপডেটেড রিয়্যাকশন লিস্ট পাঠানো হচ্ছে
+            io.to(message.room).emit('reactions updated', {
+                messageId: message._id,
+                reactions: message.reactions
             });
+
+        } catch (error) {
+            console.error('রিয়্যাকশন যোগ করতে সমস্যা:', error);
         }
-        
-        await message.save();
-
-        // রুমের সবাইকে আপডেটেড রিয়্যাকশন লিস্ট পাঠানো হচ্ছে
-        io.to(message.room).emit('reactions updated', {
-            messageId: message._id,
-            reactions: message.reactions
-        });
-
-    } catch (error) {
-        console.error('রিয়্যাকশন যোগ করতে সমস্যা:', error);
-    }
-});
+    });
 
     socket.on('chat message', async (data) => {
         if (!socket.userId) return;
@@ -268,8 +267,6 @@ socket.on('message reaction', async ({ messageId, emoji }) => {
             console.error('Error saving message:', err);
         }
     });
-<<<<<<< HEAD
-	// index.js (io.on('connection', (socket) => { ... }); এর ভিতরে)
 
     // রুম বিদ্যমান কিনা চেক করার জন্য
     socket.on('check room existence', async (roomCode, callback) => {
@@ -310,8 +307,6 @@ socket.on('message reaction', async ({ messageId, emoji }) => {
             callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
         }
     });
-=======
->>>>>>> 80de9742acd3f027716c2ec05cd46b12709dc98d
 
     socket.on('delete message', async ({ messageId }) => {
         try {
