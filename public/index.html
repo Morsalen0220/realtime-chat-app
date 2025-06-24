@@ -48,6 +48,7 @@
                         <img id="user-avatar-top" src="avatars/avatar1.png" alt="My Avatar">
                     </div>
                     <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
+					<button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">রেজিস্টার করুন</button>
                     <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
                 </div>
                 <div id="room-selection-buttons">
@@ -106,6 +107,17 @@
             <img id="profile-view-avatar" src="avatars/avatar1.png" alt="User Avatar">
             <h2 id="profile-view-username">ইউজারনেম</h2>
             <p id="profile-view-status">স্ট্যাটাস এখানে দেখা যাবে...</p>
+        </div>
+    </div>
+</div>
+<div id="delete-confirmation-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" id="deleteModalCloseButton">&times;</span>
+        <h2>মেসেজ মুছুন</h2>
+        <p>আপনি কি নিশ্চিত যে এই মেসেজটি মুছে ফেলতে চান?</p>
+        <div class="modal-buttons">
+            <button id="confirmDeleteBtn" class="action-btn confirm-btn">হ্যাঁ, মুছুন</button>
+            <button id="cancelDeleteBtn" class="action-btn cancel-btn">না, বাতিল করুন</button>
         </div>
     </div>
 </div>

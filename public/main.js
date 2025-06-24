@@ -49,6 +49,7 @@ const UI_ELEMENTS = {
     roomSelectionButtons: document.getElementById('room-selection-buttons'),
     publicChatBtn: document.getElementById('publicChatBtn'),
     privateChatBtn: document.getElementById('privateChatBtn'),
+	registerAsUserBtn: document.getElementById('registerAsUserBtn'),
     privateCodeSection: document.getElementById('private-code-section'),
     roomCodeInput: document.getElementById('roomCodeInput'),
     joinPrivateRoomBtn: document.getElementById('joinPrivateRoomBtn'),
@@ -75,7 +76,11 @@ const UI_ELEMENTS = {
     viewProfileModalCloseBtn: document.querySelector('#view-profile-modal .close-button'),
     profileViewAvatar: document.getElementById('profile-view-avatar'),
     profileViewUsername: document.getElementById('profile-view-username'),
-    profileViewStatus: document.getElementById('profile-view-status')
+    profileViewStatus: document.getElementById('profile-view-status'),
+	deleteConfirmationModal: document.getElementById('delete-confirmation-modal'),
+    deleteModalCloseButton: document.getElementById('deleteModalCloseButton'),
+    confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
+    cancelDeleteBtn: document.getElementById('cancelDeleteBtn')
 };
 
 let username = '';
@@ -125,6 +130,8 @@ function setUIState(state) {
         UI_ELEMENTS.mainChatContent.style.display = 'flex';
         UI_ELEMENTS.loggedInUserInfo.textContent = `${username}`;
         UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
+		// main.js -> setUIState ফাংশনের 'chat' স্টেট এর মধ্যে
+UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
         const avatar = localStorage.getItem('avatar');
         if (avatar) UI_ELEMENTS.userAvatarTop.src = avatar;
     }
@@ -345,6 +352,29 @@ window.addEventListener('load', () => {
     else if (userId && userType === 'guest') authenticateSocket(userId);
     else setUIState('login');
 });
+// main.js ফাইলের শেষে (অন্যান্য ইভেন্ট লিসেনারের সাথে)
+UI_ELEMENTS.deleteModalCloseButton.addEventListener('click', () => {
+    UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
+});
+
+UI_ELEMENTS.cancelDeleteBtn.addEventListener('click', () => {
+    UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
+});
+
+UI_ELEMENTS.confirmDeleteBtn.addEventListener('click', () => {
+    const messageIdToDelete = UI_ELEMENTS.confirmDeleteBtn.dataset.messageId;
+    if (messageIdToDelete) {
+        socket.emit('delete message', { messageId: messageIdToDelete });
+        UI_ELEMENTS.deleteConfirmationModal.style.display = 'none'; // মোডাল লুকান
+    }
+});
+
+// মোডালের বাইরে ক্লিক করলে বন্ধ করার জন্য
+window.addEventListener('click', (event) => {
+    if (event.target === UI_ELEMENTS.deleteConfirmationModal) {
+        UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
+    }
+});
 
 UI_ELEMENTS.publicChatBtn.addEventListener('click', () => {
     UI_ELEMENTS.publicChatBtn.classList.add('active');
@@ -411,6 +441,14 @@ function renderReactions(messageElement, reactions) {
         reactionsContainer.appendChild(reactionBtn);
     }
 }
+// main.js ফাইলের শেষে (অন্যান্য ইভেন্ট লিসেনারের সাথে)
+UI_ELEMENTS.registerAsUserBtn.addEventListener('click', () => {
+    localStorage.removeItem('token'); // বর্তমান গেস্ট সেশন টোকেন মুছে ফেলা
+    localStorage.removeItem('userId'); // গেস্ট ইউজার আইডি মুছে ফেলা
+    localStorage.removeItem('userType'); // গেস্ট টাইপ মুছে ফেলা
+    setUIState('register'); // রেজিস্ট্রেশন ফর্মে নিয়ে যাওয়া
+    showNotification('রেজিস্টার করার জন্য স্বাগত!', 'success');
+});
 
 UI_ELEMENTS.messages.addEventListener('click', (e) => {
     const messageContent = e.target.closest('.message-content');
@@ -432,9 +470,12 @@ UI_ELEMENTS.messages.addEventListener('click', (e) => {
     }
     if (!messageLi) return;
     const messageId = messageLi.dataset.messageId;
-    if (e.target.classList.contains('delete-btn') && confirm('আপনি কি মেসেজটি মুছে ফেলতে চান?')) {
-        socket.emit('delete message', { messageId });
-    } else if (e.target.classList.contains('edit-btn')) {
+   // নতুন কোড: মেসেজ ডিলিট কনফার্মেশন মোডাল দেখানোর জন্য
+if (e.target.classList.contains('delete-btn')) {
+    // ক্লিক করা মেসেজের আইডি সংরক্ষণ করুন
+    UI_ELEMENTS.confirmDeleteBtn.dataset.messageId = messageId;
+    UI_ELEMENTS.deleteConfirmationModal.style.display = 'flex'; // মোডাল দেখান
+} else if (e.target.classList.contains('edit-btn')) {
         const textElem = messageLi.querySelector('.message-text');
         const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
         if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
