@@ -830,8 +830,7 @@ body {
 
     /* মেসেজ ইনপুট ফর্ম */
     #form {
-        /* এই মিডিয়া কোয়েরিতে flex-direction: row রাখা হলো যাতে এক লাইনে থাকে */
-        flex-direction: row; /* ডিফল্ট row রাখা হলো */
+        flex-direction: row; /* মোবাইলে ইনপুট ফর্ম এক লাইনে রাখা হলো */
         padding: 8px;
         gap: 8px; /* গ্যাপ কমানো হলো */
     }
