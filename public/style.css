@@ -466,7 +466,7 @@ body {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 2000;
     left: 0;
     top: 0;
     width: 100%;
@@ -486,6 +486,7 @@ body {
     word-wrap: break-word;
     /* মোডালের জন্য শ্যাডো পরিবর্তন করা হয়েছে */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* হালকা শ্যাডো */
+	 z-index: 2001;
 }
 .close-button {
     color: #aaa;
