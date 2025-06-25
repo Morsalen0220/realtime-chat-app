@@ -16,6 +16,9 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.DATABASE_URL; // .env থেকে লোড হবে
 const JWT_SECRET = process.env.JWT_SECRET; // .env থেকে লোড হবে
 
+// প্রতি পেজে কতগুলো মেসেজ লোড হবে
+const MESSAGES_PER_PAGE = 20; // নতুন কনস্ট্যান্ট যোগ করা হয়েছে
+
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('MongoDB সংযুক্ত হয়েছে!'))
     .catch(err => console.error('MongoDB সংযোগে সমস্যা:', err));
@@ -35,7 +38,7 @@ const messageSchema = new mongoose.Schema({
     isGuest: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-	status: { type: String, default: 'sent' } // 'sent', 'delivered', 'read'
+    status: { type: String, default: 'sent' } // 'sent', 'delivered', 'read'
 });
 const Message = mongoose.model('Message', messageSchema);
 
@@ -231,12 +234,66 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         io.to(roomCode).emit('user joined', `${socket.username} ${roomCode === 'public' ? 'পাবলিক চ্যাটে' : 'রুমে'} যোগ দিয়েছে!`);
         try {
-            const previousMessages = await Message.find({ room: roomCode }).sort({ createdAt: 1 }).limit(100);
-            socket.emit('previous messages', previousMessages);
+            // নতুন: প্রাথমিকভাবে শুধুমাত্র সাম্প্রতিক MESSAGES_PER_PAGE সংখ্যক মেসেজ লোড করো
+            const previousMessages = await Message.find({ room: roomCode })
+                                                .sort({ createdAt: -1 }) // নতুন মেসেজ আগে
+                                                .limit(MESSAGES_PER_PAGE); // নির্দিষ্ট সংখ্যক মেসেজ
+            socket.emit('previous messages', previousMessages.reverse()); // ক্লায়েন্টে পুরনো মেসেজ আগে দেখাতে উল্টানো হয়েছে
         } catch (err) {
-            console.error('Error fetching messages:', err);
+            console.error('Error fetching initial messages:', err);
         }
     });
+	// index.js ফাইল থেকে io.on('connection', (socket) => { ... }); ব্লকটি খুঁজুন
+// এবং এর ভিতরে এই কোডগুলো যোগ করুন:
+
+    // রুম বিদ্যমান কিনা চেক করার জন্য
+    socket.on('check room existence', async (roomCode, callback) => {
+        console.log(`[সার্ভার] 'check room existence' ইভেন্ট পাওয়া গেছে: ${roomCode}`); // DEBUG LOG A
+        try {
+            // MongoDB তে রুমের মেসেজ আছে কিনা চেক করে
+            const roomExists = await Message.exists({ room: roomCode });
+            console.log(`[সার্ভার] রুম বিদ্যমান আছে কিনা: ${roomExists}`); // DEBUG LOG B
+            callback(roomExists);
+        } catch (error) {
+            console.error('Error checking room existence:', error);
+            callback(false); // ত্রুটি হলে রুম বিদ্যমান নয়
+        }
+    });
+
+    // নতুন প্রাইভেট রুম তৈরি করার জন্য
+    socket.on('create private room', async (roomCode, username, callback) => {
+        console.log(`[সার্ভার] 'create private room' ইভেন্ট পাওয়া গেছে: ${roomCode} বাই ${username}`); // DEBUG LOG C
+        try {
+            // প্রথমে রুমটি বিদ্যমান কিনা চেক করা হচ্ছে
+            const roomExists = await Message.exists({ room: roomCode });
+            if (roomExists) {
+                console.log(`[সার্ভার] রুম ইতিমধ্যে বিদ্যমান: ${roomCode}`); // DEBUG LOG D
+                return callback({ success: false, message: 'এই প্রাইভেট রুম কোডটি ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ব্যবহার করুন।' });
+            }
+
+            // একটি স্বাগত মেসেজ তৈরি করে রুমে যোগ করা হচ্ছে
+            const welcomeMessage = new Message({
+                username: "System",
+                message: `${username} একটি নতুন প্রাইভেট রুম "${roomCode}" তৈরি করেছে!`,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                room: roomCode,
+                userId: "system-message", // সিস্টেম মেসেজের জন্য একটি বিশেষ userId
+                avatar: "avatars/avatar1.png", // সিস্টেম মেসেজের জন্য একটি ডিফল্ট অ্যাভাটার
+                isGuest: false // সিস্টেম মেসেজ গেস্ট নয়
+            });
+            await welcomeMessage.save();
+            console.log(`[সার্ভার] নতুন রুম তৈরি এবং স্বাগত মেসেজ সেভ হয়েছে: ${roomCode}`); // DEBUG LOG E
+
+            callback({ success: true, message: 'সফলভাবে নতুন প্রাইভেট রুম তৈরি হয়েছে!' });
+        } catch (error) {
+            console.error('Error creating private room:', error);
+            callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
+        }
+    });
+
+// এই কোড ব্লকগুলো io.on('connection', (socket) => { ... }); এর ভিতরে যোগ করতে হবে।
+// নিশ্চিত করুন যে Message মডেল এবং MESSAGES_PER_PAGE কনস্ট্যান্ট ফাইলটির উপরে সংজ্ঞায়িত আছে।
+
 
     socket.on('message reaction', async ({ messageId, emoji }) => {
         try {
@@ -310,46 +367,35 @@ socket.on('chat message', async (data) => {
             console.error('Error saving message:', err);
         }
     });
-    // রুম বিদ্যমান কিনা চেক করার জন্য
-    socket.on('check room existence', async (roomCode, callback) => {
-        try {
-            // MongoDB তে রুমের মেসেজ আছে কিনা চেক করে
-            const roomExists = await Message.exists({ room: roomCode });
-            callback(roomExists);
-        } catch (error) {
-            console.error('Error checking room existence:', error);
-            callback(false); // ত্রুটি হলে রুম বিদ্যমান নয়
-        }
-    });
 
-    // নতুন প্রাইভেট রুম তৈরি করার জন্য
-    socket.on('create private room', async (roomCode, username, callback) => {
+    // নতুন Socket.IO ইভেন্ট: পুরোনো মেসেজ লোড করার জন্য
+    socket.on('fetch older messages', async ({ roomCode, lastMessageId }) => {
+        console.log(`[সার্ভার] 'fetch older messages' ইভেন্ট পাওয়া গেছে (রুম: ${roomCode}, শেষ মেসেজ: ${lastMessageId})`); // DEBUG LOG A
         try {
-            // প্রথমে রুমটি বিদ্যমান কিনা চেক করা হচ্ছে
-            const roomExists = await Message.exists({ room: roomCode });
-            if (roomExists) {
-                return callback({ success: false, message: 'এই প্রাইভেট রুম কোডটি ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ব্যবহার করুন।' });
+            // lastMessageId এর চেয়ে পুরোনো মেসেজগুলো লোড করো
+            const query = { room: roomCode };
+            if (lastMessageId) {
+                query._id = { $lt: lastMessageId }; // $lt মানে "less than"
             }
-
-            // একটি স্বাগত মেসেজ তৈরি করে রুমে যোগ করা হচ্ছে
-            const welcomeMessage = new Message({
-                username: "System",
-                message: `${username} একটি নতুন প্রাইভেট রুম "${roomCode}" তৈরি করেছে!`,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                room: roomCode,
-                userId: "system-message", // সিস্টেম মেসেজের জন্য একটি বিশেষ userId
-                avatar: "avatars/avatar1.png", // সিস্টেম মেসেজের জন্য একটি ডিফল্ট অ্যাভাটার
-                isGuest: false // সিস্টেম মেসেজ গেস্ট নয়
+            
+            const olderMessages = await Message.find(query)
+                                            .sort({ createdAt: -1 }) // নতুন মেসেজ আগে
+                                            .limit(MESSAGES_PER_PAGE);
+            
+            const hasMore = olderMessages.length === MESSAGES_PER_PAGE; // আরও মেসেজ আছে কিনা চেক করো
+            
+            socket.emit('older messages', {
+                messages: olderMessages.reverse(), // ক্লায়েন্টে পুরনো মেসেজ আগে দেখাতে উল্টানো হয়েছে
+                hasMore: hasMore
             });
-            await welcomeMessage.save();
-
-            callback({ success: true, message: 'সফলভাবে নতুন প্রাইভেট রুম তৈরি হয়েছে!' });
-        } catch (error) {
-            console.error('Error creating private room:', error);
-            callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
+            console.log(`[সার্ভার] পুরোনো মেসেজ পাঠানো হয়েছে (রুম: ${roomCode}, সংখ্যা: ${olderMessages.length}, আরও আছে: ${hasMore})`); // DEBUG LOG B
+        } catch (err) {
+            console.error('Error fetching older messages:', err);
         }
     });
-	   socket.on('message read', async ({ messageId, room }) => {
+
+
+    socket.on('message read', async ({ messageId, room }) => {
         console.log(`[সার্ভার] 'message read' ইভেন্ট পাওয়া গেছে (ID: ${messageId})`); // DEBUG LOG 5
         try {
             const message = await Message.findById(messageId);

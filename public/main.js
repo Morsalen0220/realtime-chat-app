@@ -82,12 +82,17 @@ const UI_ELEMENTS = {
     confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
     cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
     registerAsUserBtn: document.getElementById('registerAsUserBtn'),
-    onlineUsersCountDisplay: document.getElementById('onlineUsersCountDisplay') 
+    onlineUsersCountDisplay: document.getElementById('onlineUsersCountDisplay'),
+    messagesLoader: document.getElementById('messages-loader') // নতুন লোডার উপাদান
 };
 
 let username = '';
 let currentRoom = '';
 let userType = 'guest';
+let hasMoreMessages = true; // আরও মেসেজ আছে কিনা ট্র্যাক করবে
+let fetchingOlderMessages = false; // মেসেজ লোড হচ্ছে কিনা ট্র্যাক করবে
+let lastFetchedMessageId = null; // লোড হওয়া সর্বশেষ মেসেজের আইডি
+
 
 // ইমোজি পিকারের জন্য নতুন কোড
 const emojiBtn = document.getElementById('emoji-btn');
@@ -259,7 +264,7 @@ if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click
 });
 
 // displayMessage ফাংশন
-function displayMessage(data) {
+function displayMessage(data, prepend = false) { // prepend প্যারামিটার যোগ করা হয়েছে
     const item = document.createElement('li');
     item.dataset.messageId = data._id;
 
@@ -311,7 +316,13 @@ function displayMessage(data) {
         ${buttonsHTML}
     `;
 
-    if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
+    if (UI_ELEMENTS.messages) {
+        if (prepend) {
+            UI_ELEMENTS.messages.prepend(item); // পুরোনো মেসেজ উপরে যোগ করা
+        } else {
+            UI_ELEMENTS.messages.appendChild(item); // নতুন মেসেজ নিচে যোগ করা
+        }
+    }
     
     // মেসেজ যখন যুক্ত হয়, তখন IntersectionObserver সেট করা
     // যদি এটি আমাদের মেসেজ না হয় এবং এখনও পড়া না হয়ে থাকে
@@ -334,7 +345,8 @@ function displayMessage(data) {
         renderReactions(item, data.reactions);
     }
     
-    if (UI_ELEMENTS.messages && UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
+    // স্ক্রল নিচে থাকবে যদি নতুন মেসেজ হয় বা যদি ব্যবহারকারী নিচে থাকে
+    if (!prepend && UI_ELEMENTS.messages && UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
         UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
     }
 }
@@ -372,6 +384,7 @@ function joinRoom(roomName) {
     } else if (roomName !== 'public' && UI_ELEMENTS.privateChatBtn) { 
         UI_ELEMENTS.privateChatBtn.classList.add('active');
     }
+    hasMoreMessages = true; // রুম পরিবর্তন করলে নতুন করে মেসেজ লোড শুরু হবে
 }
 
 function addRoomToSavedList(roomCode) {
@@ -437,7 +450,92 @@ window.addEventListener('load', () => {
     } else {
         console.error("ইউজার লিস্ট পাওয়া যায়নি।"); 
     }
+
+    // নতুন: স্ক্রল ইভেন্ট লিসেনার যোগ করা
+    if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.addEventListener('scroll', () => {
+            if (UI_ELEMENTS.messages.scrollTop === 0 && hasMoreMessages && !fetchingOlderMessages) {
+                // যখন ব্যবহারকারী একদম উপরে স্ক্রল করবে
+                fetchOlderMessages();
+            }
+        });
+    }
+
+    // থিম টগল ইভেন্ট লিসেনার
+    if (UI_ELEMENTS.darkModeToggle) {
+        // লোড হওয়ার সময় থিম সেট করা
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            UI_ELEMENTS.darkModeToggle.checked = true;
+        } else {
+            // ডিফল্ট লাইট থিম, সিস্টেম প্রিফারেন্স চেক করা যেতে পারে
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                // সিস্টেম ডার্ক মোড প্রিফার করে, কিন্তু লোকাল স্টোরেজে কিছু নেই
+                // চাইলে এখানে ডিফল্ট থিম ডার্ক করা যেতে পারে বা লাইট রাখা যেতে পারে
+                // বর্তমানে, লোকাল স্টোরেজ ডিফল্টকে অগ্রাধিকার দেবে
+            }
+        }
+
+        UI_ELEMENTS.darkModeToggle.addEventListener('change', (event) => {
+            if (event.target.checked) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
 });
+
+// নতুন: পুরোনো মেসেজ লোড করার ফাংশন
+// lastFetchedMessageId গ্লোবালভাবে সংজ্ঞায়িত আছে
+async function fetchOlderMessages() {
+    if (!hasMoreMessages || fetchingOlderMessages) return;
+
+    fetchingOlderMessages = true;
+    if (UI_ELEMENTS.messagesLoader) {
+        UI_ELEMENTS.messagesLoader.style.display = 'flex'; // লোডার দেখাও
+        UI_ELEMENTS.messagesLoader.textContent = 'লোড হচ্ছে...';
+    }
+    
+    // বর্তমান রুমের প্রথম মেসেজের আইডি নাও
+    const firstMessageElement = UI_ELEMENTS.messages.querySelector('.message');
+    lastFetchedMessageId = firstMessageElement ? firstMessageElement.dataset.messageId : null;
+
+    console.log(`Fetching older messages for room: ${currentRoom}, before: ${lastFetchedMessageId}`);
+    socket.emit('fetch older messages', { roomCode: currentRoom, lastMessageId: lastFetchedMessageId });
+}
+
+
+// Socket.IO ইভেন্ট লিসেনার: পুরোনো মেসেজ সার্ভার থেকে পেলে
+socket.on('older messages', ({ messages, hasMore }) => {
+    console.log(`Received ${messages.length} older messages. Has more: ${hasMore}`);
+    if (UI_ELEMENTS.messagesLoader) {
+        UI_ELEMENTS.messagesLoader.style.display = 'none'; // লোডার লুকান
+    }
+    fetchingOlderMessages = false;
+    hasMoreMessages = hasMore;
+
+    if (messages.length === 0 && UI_ELEMENTS.messagesLoader) {
+        UI_ELEMENTS.messagesLoader.style.display = 'block';
+        UI_ELEMENTS.messagesLoader.textContent = 'আর কোনো পুরোনো মেসেজ নেই।';
+        setTimeout(() => {
+            if (UI_ELEMENTS.messagesLoader) UI_ELEMENTS.messagesLoader.style.display = 'none';
+            if (UI_ELEMENTS.messagesLoader) UI_ELEMENTS.messagesLoader.textContent = 'লোড হচ্ছে...'; // ডিফল্ট টেক্সট ফিরিয়ে আনা
+        }, 3000);
+        return;
+    }
+
+    const oldScrollHeight = UI_ELEMENTS.messages.scrollHeight;
+    messages.forEach(msg => displayMessage(msg, true)); //prepend = true মানে মেসেজগুলো উপরে যোগ হবে
+    
+    // স্ক্রল পজিশন অ্যাডজাস্ট করা যাতে লোড হওয়ার পর স্ক্রিন জাম্প না করে
+    const newScrollHeight = UI_ELEMENTS.messages.scrollHeight;
+    UI_ELEMENTS.messages.scrollTop = newScrollHeight - oldScrollHeight;
+});
+
 
 if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.addEventListener('click', () => {
     UI_ELEMENTS.publicChatBtn.classList.add('active');
@@ -453,23 +551,46 @@ if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('cli
 });
 
 if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
+    // ডিবাগিং লগ যোগ করা হয়েছে
+    
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
-    if (!privateCode) return showNotification('প্রাইভেট কোড লিখুন!', 'error'); 
+    if (!privateCode) {
+        showNotification('প্রাইভেট কোড লিখুন!', 'error');
+        console.log('[ক্লায়েন্ট] প্রাইভেট কোড খালি।'); 
+        return;
+    }
+    
     socket.emit('check room existence', privateCode, (exists) => {
-        if (exists) joinRoom(privateCode);
-        else showNotification('রুমটি নেই। নতুন তৈরি করুন।', 'error'); 
+        
+        if (exists) {
+            joinRoom(privateCode);
+            console.log(`[ক্লায়েন্ট] রুমে যোগ দিচ্ছে: ${privateCode}`); 
+        } else {
+            showNotification('রুমটি নেই। নতুন তৈরি করুন।', 'error');
+            
+        }
     });
 });
 
 if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
+    // ডিবাগিং লগ যোগ করা হয়েছে
+ 
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
-    if (!privateCode) return showNotification('প্রাইভেট কোড লিখুন!', 'error'); 
+    if (!privateCode) {
+        showNotification('প্রাইভেট কোড লিখুন!', 'error');
+        console.log('[ক্লায়েন্ট] প্রাইভেট কোড খালি।'); 
+        return;
+    }
+    
     socket.emit('create private room', privateCode, username, (response) => {
+       
         if (response.success) {
             joinRoom(privateCode);
             showNotification(response.message);
+            
         } else {
-            showNotification(response.message || 'রুম তৈরি সমস্যা।', 'error'); 
+            showNotification(response.message || 'রুম তৈরি সমস্যা।', 'error');
+            console.log(`[ক্লায়েন্ট] রুম তৈরি ব্যর্থ হয়েছে: ${response.message}`); 
         }
     });
 });
@@ -622,7 +743,7 @@ socket.on('online users list', (users) => {
 socket.on('previous messages', (msgs) => {
     if (UI_ELEMENTS.messages) {
         UI_ELEMENTS.messages.innerHTML = '';
-        msgs.forEach(displayMessage);
+        msgs.forEach(msg => displayMessage(msg, false)); // false মানে নতুন মেসেজ হিসেবে যোগ হবে
     }
 });
 
@@ -666,7 +787,7 @@ socket.on('chat cleared', () => {
 
 // socket.on('message status updated') ফাংশন - ইনলাইন স্টাইল সহ
 socket.on('message status updated', ({ messageId, status }) => {
-    console.log(`[ক্লায়েন্ট] মেসেজ স্ট্যাটাস আপডেট ইভেন্ট পাওয়া গেছে (ID: ${messageId}, স্ট্যাটাস: ${status})`); 
+   
 
     const messageLi = document.querySelector(`li[data-message-id="${messageId}"]`);
     if (messageLi) {
@@ -692,14 +813,14 @@ socket.on('message status updated', ({ messageId, status }) => {
             
             const newIconHTML = `<i class="${iconClass}" style="color:${iconColor}; font-size:0.75em; margin-left:5px;" title="${iconTitle}"></i>`;
             
+            // বিদ্যমান আইকনটি খুঁজে বের করে আপডেট করা
             const existingIcon = timestampSpan.querySelector('.fas');
             if (existingIcon) {
                 // বিদ্যমান আইকনের ক্লাস এবং স্টাইল পরিবর্তন করো
-                existingIcon.className = iconClass;
-                existingIcon.style.color = iconColor;
-                existingIcon.style.fontSize = '0.75em';
-                existingIcon.style.marginLeft = '5px';
-                existingIcon.title = iconTitle;
+                existingIcon.className = iconClass; // ক্লাস পরিবর্তন
+                existingIcon.style.color = iconColor; // রঙ পরিবর্তন
+                existingIcon.title = iconTitle; // টাইটেল পরিবর্তন
+                // অন্যান্য স্টাইল যেমন font-size, margin-left অপরিবর্তিত থাকবে
             } else {
                 // যদি কোনো কারণে আইকন না থাকে, তবে নতুন আইকন HTML যোগ করো
                 timestampSpan.innerHTML += newIconHTML;

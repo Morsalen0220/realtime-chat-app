@@ -486,7 +486,7 @@ body {
     word-wrap: break-word;
     /* মোডালের জন্য শ্যাডো পরিবর্তন করা হয়েছে */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* হালকা শ্যাডো */
-	 z-index: 2001;
+	  z-index: 2001;
 }
 .close-button {
     color: #aaa;
@@ -745,6 +745,72 @@ body {
 .cancel-btn:hover {
     background-color: #5a6268;
 }
+/* style.css ফাইলের শেষে যোগ করুন */
+
+/* নোটিফিকেশন কন্টেইনার */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000; /* নিশ্চিত করুন এটি অন্যান্য উপাদানের উপরে থাকে */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end; /* ডানদিকে অ্যালাইন করবে */
+}
+
+/* প্রতিটি নোটিফিকেশন বার্তার জন্য স্টাইল */
+.notification {
+    padding: 15px 25px; /* প্যাডিং বাড়ানো হলো */
+    border-radius: 10px; /* কোণা আরও গোলাকার */
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* শ্যাডো আরও স্পষ্ট করা হলো */
+    opacity: 0;
+    transform: translateX(100%); /* ডানদিক থেকে স্লাইড হয়ে আসবে */
+    transition: all 0.4s ease-in-out;
+    max-width: 300px; /* নির্দিষ্ট প্রস্থ সেট করা হলো */
+    text-align: center; /* টেক্সট সেন্টারে থাকবে */
+    word-wrap: break-word; /* লম্বা টেক্সট র‍্যাপ হবে */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* হালকা বর্ডার যোগ করা হলো */
+    backdrop-filter: blur(5px); /* হালকা ব্লার ইফেক্ট (আধুনিক লুকের জন্য) */
+    -webkit-backdrop-filter: blur(5px); /* সাফারি ব্রাউজারের জন্য */
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* সফল নোটিফিকেশনের জন্য সবুজ রঙ */
+.notification.success {
+    background-color: rgba(40, 167, 69, 0.9); /* সবুজ রঙ, কিছুটা স্বচ্ছ */
+    border-color: rgba(40, 167, 69, 0.7);
+}
+
+/* ত্রুটি নোটিফিকেশনের জন্য লাল রঙ */
+.notification.error {
+    background-color: rgba(220, 53, 69, 0.9); /* লাল রঙ, কিছুটা স্বচ্ছ */
+    border-color: rgba(220, 53, 69, 0.7);
+}
+
+/* ছোট স্ক্রিনের জন্য রেসপনসিভনেস */
+@media (max-width: 480px) {
+    #notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px; /* বামদিকেও কিছুটা মার্জিন */
+        width: auto; /* প্রস্থ স্বয়ংক্রিয় */
+        align-items: center; /* সেন্টারে অ্যালাইন করবে */
+    }
+    .notification {
+        width: 100%; /* ছোট স্ক্রিনে পুরো প্রস্থ নেবে */
+        max-width: none; /* সর্বোচ্চ প্রস্থ বাতিল */
+        font-size: 0.9em; /* ফন্ট সাইজ কমানো হলো */
+        padding: 12px 20px;
+    }
+}
+
 
 
 /* ========================================================== */
@@ -896,6 +962,7 @@ body {
         width: 80px;
         height: 80px;
     }
+	
 }
 
 /* 480px এর নিচে খুব ছোট স্ক্রিনের জন্য আরও ফাইন-টিউনিং */
@@ -924,7 +991,7 @@ body {
     }
     #room-selection-buttons .room-btn, #private-code-section button, #private-code-section input {
         width: calc(50% - 4px); /* দুটি বাটন/ইনপুট পাশাপাশি */
-        margin-bottom: 0; /* মার্জিন বাতিল */
+        margin-bottom: 0; /* মারgin বাতিল */
         font-size: 0.85em; /* ফন্ট সাইজ আরও ছোট */
         padding: 8px 10px; /* প্যাডিং অ্যাডজাস্ট */
     }
