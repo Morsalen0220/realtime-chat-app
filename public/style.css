@@ -461,6 +461,38 @@ body {
     background-color: #0056b3;
     box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
+#ephemeralToggleBtn {
+    background-color: #6c757d; /* ডিফল্ট ধূসর রঙ */
+    color: white;
+    padding: 10px 15px; /* প্যাডিং অ্যাডজাস্ট করা হয়েছে */
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em; /* আইকনের আকার */
+    cursor: pointer;
+    box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    display: flex; /* আইকনকে সেন্টারে আনতে */
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}
+
+#ephemeralToggleBtn:hover {
+    background-color: #5a6268;
+    box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+
+/* যখন সক্রিয় থাকবে */
+#ephemeralToggleBtn.active {
+    background-color: #ffc107; /* সক্রিয় হলে হলুদ রঙ (বা তোমার পছন্দসই রঙ) */
+    color: #333; /* সক্রিয় অবস্থায় টেক্সটের রঙ */
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(255,255,255,0.4);
+}
+#ephemeralToggleBtn.active:hover {
+    background-color: #e0a800;
+}
+
+/* মোবাইল রেসপনসিভনেস: #form এর মধ্যে বাটনগুলোর স্টাইল */
 
 /* মোডাল স্টাইল */
 .modal {
@@ -745,6 +777,25 @@ body {
 .cancel-btn:hover {
     background-color: #5a6268;
 }
+/* style.css এ যোগ করুন */
+
+/* ইফেমিরাল টগল বাটনের জন্য 'info' নোটিফিকেশন স্টাইল (যদি যোগ করতে চাও) */
+.notification.info {
+    background-color: rgba(23, 162, 184, 0.9); /* নীলচে সবুজ রঙ */
+    border-color: rgba(23, 162, 184, 0.7);
+}
+
+/* মেসেজ ডিসপ্লেতে ইফেমিরাল মেসেজের জন্য স্টাইল */
+.message.ephemeral .message-content {
+    background-color: #ffe0b2; /* হালকা কমলা */
+    border: 1px dashed #ffa000; /* ড্যাশড বর্ডার */
+    color: #333;
+}
+body.dark-theme .message.ephemeral .message-content {
+    background-color: #6a4a00;
+    border: 1px dashed #ffa000;
+    color: #eee;
+}
 /* style.css ফাইলের শেষে যোগ করুন */
 
 /* নোটিফিকেশন কন্টেইনার */
@@ -1001,5 +1052,16 @@ body {
     }
     #private-code-section button:not(:last-child) {
         margin-bottom: 0;
+    }
+}
+@media (max-width: 480px) {
+    #form {
+        /* অন্যান্য স্টাইল */
+        gap: 5px; /* গ্যাপ কমানো হলো */
+    }
+    #emoji-btn, #form > button, #ephemeralToggleBtn { /* নতুন বাটন যোগ করা হয়েছে */
+        width: auto;
+        padding: 8px 10px; /* প্যাডিং কমানো হলো */
+        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
     }
 }

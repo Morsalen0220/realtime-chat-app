@@ -72,10 +72,16 @@
                 <div id="typing-indicator"></div>
                 <form id="form" action="">
                     <button type="button" id="emoji-btn">😀</button>
+                    <!-- নতুন ইফেমিরাল টগল বাটন -->
+                    <button type="button" id="ephemeralToggleBtn" title="স্বয়ংক্রিয়ভাবে মুছে যাওয়া মেসেজ">
+                        <i class="fas fa-hourglass-half"></i> <!-- ঘড়ির আইকন -->
+                    </button>
                     <input id="input" autocomplete="off" placeholder="মেসেজ লিখুন..." />
                     <!-- "প্রেরণ করুন" বাটনের জায়গায় Font Awesome আইকন ব্যবহার করা হয়েছে -->
                     <button type="submit"><i class="fas fa-paper-plane"></i></button>
                 </form>
+                <!-- ইনফিনিট স্ক্রলিং লোডার -->
+                <div id="messages-loader" style="display: none; text-align: center; padding: 10px; color: #888;">লোড হচ্ছে...</div>
             </div>
         </div>
     </div>
@@ -98,7 +104,7 @@
                     <img src="avatars/avatar1.png" class="avatar-choice" data-avatar="avatars/avatar1.png" alt="Avatar 1">
                     <img src="avatars/avatar2.png" class="avatar-choice" data-avatar="avatars/avatar2.png" alt="Avatar 2">
                     <img src="avatars/avatar3.png" class="avatar-choice" data-avatar="avatars/avatar3.png" alt="Avatar 3">
-                    <img src="avatars/avatar4.png" class="avatar-choice" data-avatar="avatars/avatar4.png" alt="Avatar 4">
+                    <img src="avatars/avatar4.png" data-avatar="avatars/avatar4.png" alt="Avatar 4">
                 </div>
             </div>
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
@@ -107,7 +113,7 @@
                 <textarea id="status-input" rows="3" maxlength="150" placeholder="স্ট্যাটাস লিখুন..."></textarea> <!-- সংক্ষিপ্ত টেক্সট -->
                 <button id="save-status-btn">সেভ করুন</button> <!-- সংক্ষিপ্ত টেক্সট -->
             </div>
-            <!-- থিম টoggle যোগ করা হয়েছে -->
+            <!-- থিম টoggle যোগ করা হয়েছে -->
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
             <div id="theme-selection-section" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
                 <p style="margin: 0;">থিম পরিবর্তন করুন:</p>
@@ -139,6 +145,21 @@
             <div class="modal-buttons">
                 <button id="confirmDeleteBtn" class="action-btn confirm-btn">হ্যাঁ, মুছুন</button>
                 <button id="cancelDeleteBtn" class="action-btn cancel-btn">না, বাতিল করুন</button>
+            </div>
+        </div>
+    </div>
+    <!-- নতুন: স্বয়ংক্রিয়ভাবে মুছে যাওয়া মেসেজ মোডাল -->
+    <div id="ephemeral-duration-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="ephemeralModalCloseButton">&times;</span>
+            <h2>মেসেজ মুছার সময়</h2>
+            <p>এই মেসেজগুলো কতক্ষণ পর স্বয়ংক্রিয়ভাবে মুছে যাবে?</p>
+            <div class="duration-options">
+                <button class="duration-choice" data-duration="5000">৫ সেকেন্ড</button>
+                <button class="duration-choice" data-duration="10000">১০ সেকেন্ড</button>
+                <button class="duration-choice" data-duration="20000">২০ সেকেন্ড</button>
+                <button class="duration-choice" data-duration="3600000">১ ঘণ্টা</button>
+                <button class="duration-choice off-option" data-duration="0">বন্ধ করুন</button>
             </div>
         </div>
     </div>

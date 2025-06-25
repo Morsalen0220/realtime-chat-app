@@ -38,7 +38,9 @@ const messageSchema = new mongoose.Schema({
     isGuest: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-    status: { type: String, default: 'sent' } // 'sent', 'delivered', 'read'
+    status: { type: String, default: 'sent' }, // 'sent', 'delivered', 'read'
+    isEphemeral: { type: Boolean, default: false }, // নতুন ইফেমিরাল ফিল্ড
+    ephemeralAt: { type: Date } // মেসেজ কখন মুছে যাবে তার টাইমস্ট্যাম্প
 });
 const Message = mongoose.model('Message', messageSchema);
 
@@ -139,7 +141,6 @@ app.post('/api/user/status', protect, async (req, res) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
-        console.error('Status update error:', error); // স্ট্যাটাস আপডেট ত্রুটি লগ করুন
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -243,8 +244,6 @@ io.on('connection', (socket) => {
             console.error('Error fetching initial messages:', err);
         }
     });
-	// index.js ফাইল থেকে io.on('connection', (socket) => { ... }); ব্লকটি খুঁজুন
-// এবং এর ভিতরে এই কোডগুলো যোগ করুন:
 
     // রুম বিদ্যমান কিনা চেক করার জন্য
     socket.on('check room existence', async (roomCode, callback) => {
@@ -291,9 +290,6 @@ io.on('connection', (socket) => {
         }
     });
 
-// এই কোড ব্লকগুলো io.on('connection', (socket) => { ... }); এর ভিতরে যোগ করতে হবে।
-// নিশ্চিত করুন যে Message মডেল এবং MESSAGES_PER_PAGE কনস্ট্যান্ট ফাইলটির উপরে সংজ্ঞায়িত আছে।
-
 
     socket.on('message reaction', async ({ messageId, emoji }) => {
         try {
@@ -332,7 +328,7 @@ io.on('connection', (socket) => {
 
 socket.on('chat message', async (data) => {
         if (!socket.userId) return;
-        const { message, timestamp, room } = data;
+        const { message, timestamp, room, isEphemeral, ephemeralDuration } = data; // isEphemeral, ephemeralDuration রিসিভ করা হয়েছে
         try {
             const newMessage = new Message({
                 username: socket.username,
@@ -342,10 +338,12 @@ socket.on('chat message', async (data) => {
                 userId: socket.userId,
                 avatar: socket.avatar,
                 isGuest: socket.userId.startsWith('guest-'),
-                status: 'sent' // ডিফল্ট স্ট্যাটাস 'sent'
+                status: 'sent', // ডিফল্ট স্ট্যাটাস 'sent'
+                isEphemeral: isEphemeral, // নতুন ফিল্ড সেট করা
+                ephemeralAt: isEphemeral ? new Date(Date.now() + ephemeralDuration) : undefined // মুছে যাওয়ার সময়
             });
             await newMessage.save();
-            console.log(`[সার্ভার] মেসেজ সেভ হয়েছে (ID: ${newMessage._id}, স্ট্যাটাস: ${newMessage.status})`); // DEBUG LOG 1
+            console.log(`[সার্ভার] মেসেজ সেভ হয়েছে (ID: ${newMessage._id}, স্ট্যাটাস: ${newMessage.status}, ইফেমিরাল: ${newMessage.isEphemeral})`); // DEBUG LOG 1
 
             const messageToSend = newMessage.toObject();
             io.to(room).emit('chat message', messageToSend);
@@ -362,6 +360,26 @@ socket.on('chat message', async (data) => {
                 status: 'delivered'
             });
             console.log(`[সার্ভার] 'delivered' স্ট্যাটাস ইমিট হয়েছে (ID: ${newMessage._id})`); // DEBUG LOG 4
+
+            // যদি মেসেজটি ইফেমিরাল হয়, তবে নির্দিষ্ট সময় পর মুছে ফেলার জন্য একটি টাইমার সেট করুন
+            if (isEphemeral) {
+                setTimeout(async () => {
+                    try {
+                        const messageToDelete = await Message.findById(newMessage._id);
+                        if (messageToDelete) {
+                            // মেসেজটি ডেটাবেস থেকে মুছে ফেলুন
+                            await Message.deleteOne({ _id: newMessage._id }); // মেসেজ মুছে ফেলা
+                            io.to(room).emit('message edited', { // ক্লায়েন্টকে জানানোর জন্য 'message edited' ইভেন্ট ব্যবহার করা
+                                messageId: newMessage._id,
+                                newMessageText: 'এই গোপন মেসেজটি স্বয়ংক্রিয়ভাবে মুছে গেছে।' // মুছে যাওয়ার বার্তা
+                            });
+                            console.log(`[সার্ভার] ইফেমিরাল মেসেজ স্বয়ংক্রিয়ভাবে মুছে গেছে (ID: ${newMessage._id})`);
+                        }
+                    } catch (deleteError) {
+                        console.error('ইফেমিরাল মেসেজ মুছতে সমস্যা:', deleteError);
+                    }
+                }, ephemeralDuration);
+            }
 
         } catch (err) {
             console.error('Error saving message:', err);

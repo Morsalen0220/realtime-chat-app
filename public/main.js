@@ -83,7 +83,12 @@ const UI_ELEMENTS = {
     cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
     registerAsUserBtn: document.getElementById('registerAsUserBtn'),
     onlineUsersCountDisplay: document.getElementById('onlineUsersCountDisplay'),
-    messagesLoader: document.getElementById('messages-loader') // নতুন লোডার উপাদান
+    messagesLoader: document.getElementById('messages-loader'), // নতুন লোডার উপাদান
+    darkModeToggle: document.getElementById('darkModeToggle'), // থিম টগল
+    ephemeralToggleBtn: document.getElementById('ephemeralToggleBtn'), // ইফেমিরাল টগল বাটন
+    ephemeralDurationModal: document.getElementById('ephemeral-duration-modal'), // ইফেমিরাল মোডাল
+    ephemeralModalCloseButton: document.getElementById('ephemeralModalCloseButton'), // ইফেমিরাল মোডাল বন্ধ বাটন
+    durationChoices: document.querySelector('#ephemeral-duration-modal .duration-options') // সময়কাল অপশন কন্টেইনার
 };
 
 let username = '';
@@ -92,6 +97,8 @@ let userType = 'guest';
 let hasMoreMessages = true; // আরও মেসেজ আছে কিনা ট্র্যাক করবে
 let fetchingOlderMessages = false; // মেসেজ লোড হচ্ছে কিনা ট্র্যাক করবে
 let lastFetchedMessageId = null; // লোড হওয়া সর্বশেষ মেসেজের আইডি
+let isEphemeralModeActive = false; // ইফেমিরাল মোড সক্রিয় আছে কিনা ট্র্যাক করবে
+let selectedEphemeralDuration = null; // নির্বাচিত ইফেমিরাল সময়কাল (মিলিসেকেন্ডে)
 
 
 // ইমোজি পিকারের জন্য নতুন কোড
@@ -310,8 +317,7 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
             ${reactionPaletteHTML}
             <small class="timestamp">
                 ${data.timestamp}
-                ${statusIconHTML} <!-- স্ট্যাটাস আইকন যোগ করা হয়েছে -->
-            </small>
+                ${statusIconHTML} </small>
         </div>
         ${buttonsHTML}
     `;
@@ -552,42 +558,42 @@ if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('cli
 
 if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
     // ডিবাগিং লগ যোগ করা হয়েছে
-    
+    console.log('[ক্লায়েন্ট] "প্রবেশ" বাটন ক্লিক হয়েছে।'); 
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) {
         showNotification('প্রাইভেট কোড লিখুন!', 'error');
         console.log('[ক্লায়েন্ট] প্রাইভেট কোড খালি।'); 
         return;
     }
-    
+    console.log(`[ক্লায়েন্ট] 'check room existence' ইভেন্ট পাঠাচ্ছে: ${privateCode}`); 
     socket.emit('check room existence', privateCode, (exists) => {
-        
+        console.log(`[ক্লায়েন্ট] 'check room existence' থেকে রেসপন্স: ${exists}`); 
         if (exists) {
             joinRoom(privateCode);
             console.log(`[ক্লায়েন্ট] রুমে যোগ দিচ্ছে: ${privateCode}`); 
         } else {
             showNotification('রুমটি নেই। নতুন তৈরি করুন।', 'error');
-            
+            console.log(`[ক্লায়েন্ট] রুম বিদ্যমান নেই: ${privateCode}`); 
         }
     });
 });
 
 if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
     // ডিবাগিং লগ যোগ করা হয়েছে
- 
+    console.log('[ক্লায়েন্ট] "তৈরি" বাটন ক্লিক হয়েছে।'); 
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) {
         showNotification('প্রাইভেট কোড লিখুন!', 'error');
         console.log('[ক্লায়েন্ট] প্রাইভেট কোড খালি।'); 
         return;
     }
-    
+    console.log(`[ক্লায়েন্ট] 'create private room' ইভেন্ট পাঠাচ্ছে: ${privateCode}`); 
     socket.emit('create private room', privateCode, username, (response) => {
-       
+        console.log(`[ক্লায়েন্ট] 'create private room' থেকে রেসপন্স: ${JSON.stringify(response)}`); 
         if (response.success) {
             joinRoom(privateCode);
             showNotification(response.message);
-            
+            console.log(`[ক্লায়েন্ট] রুম সফলভাবে তৈরি হয়েছে ও যোগ দিয়েছে: ${privateCode}`); 
         } else {
             showNotification(response.message || 'রুম তৈরি সমস্যা।', 'error');
             console.log(`[ক্লায়েন্ট] রুম তৈরি ব্যর্থ হয়েছে: ${response.message}`); 
@@ -602,9 +608,15 @@ if (UI_ELEMENTS.form) UI_ELEMENTS.form.addEventListener('submit', (e) => {
         socket.emit('chat message', {
             message,
             room: currentRoom,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isEphemeral: isEphemeralModeActive, // ইফেমিরাল ফ্ল্যাগ যোগ করা
+            ephemeralDuration: selectedEphemeralDuration // নির্বাচিত সময়কাল যোগ করা
         });
         if (UI_ELEMENTS.input) UI_ELEMENTS.input.value = '';
+        // মোডটি স্বয়ংক্রিয়ভাবে বন্ধ করতে চাইলে:
+        // isEphemeralModeActive = false;
+        // if (UI_ELEMENTS.ephemeralToggleBtn) UI_ELEMENTS.ephemeralToggleBtn.classList.remove('active');
+        // selectedEphemeralDuration = null;
     }
 });
 
@@ -787,7 +799,7 @@ socket.on('chat cleared', () => {
 
 // socket.on('message status updated') ফাংশন - ইনলাইন স্টাইল সহ
 socket.on('message status updated', ({ messageId, status }) => {
-   
+    console.log(`[ক্লায়েন্ট] মেসেজ স্ট্যাটাস আপডেট ইভেন্ট পাওয়া গেছে (ID: ${messageId}, স্ট্যাটাস: ${status})`); 
 
     const messageLi = document.querySelector(`li[data-message-id="${messageId}"]`);
     if (messageLi) {
