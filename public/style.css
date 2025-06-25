@@ -7,15 +7,20 @@
     box-sizing: border-box; /* সমস্ত উপাদানের জন্য বক্স সাইজিং বর্ডার-বক্স সেট করা হয়েছে */
 }
 
-body {
+/* HTML এবং Body এর জন্য ফুল হাইট নিশ্চিত করা */
+html, body {
+    height: 100%; /* HTML এবং BODY এর উচ্চতা সম্পূর্ণ ভিউপোর্ট হবে */
     margin: 0;
     padding: 0;
+}
+
+body {
     font-family: 'Roboto', 'Hind Siliguri', sans-serif;
     background-color: #e0e5ec;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    /* min-height: 100vh; এটি সরিয়ে শুধু height: 100%; ব্যবহার করা হয়েছে */
     overflow: hidden; /* পুরো পেজের ওভারফ্লো যেন না হয় */
 }
 
@@ -26,7 +31,8 @@ body {
                 -10px -10px 20px rgba(255, 255, 255, 0.8);
     width: 95%;
     max-width: 900px;
-    height: 90vh;
+    /* এখানে height: 100% ব্যবহার করা হয়েছে, 90vh নয় */
+    height: 100%; /* প্যারেন্ট বডির 100% উচ্চতা নেবে */
     display: flex;
     flex-direction: column;
     overflow: hidden; /* কন্টেইনারের ভিতরের কন্টেন্ট যেন ওভারফ্লো না হয় */
@@ -125,6 +131,8 @@ body {
     flex-grow: 1;
     overflow: hidden;
     position: relative;
+    /* নতুন: উচ্চতা নিশ্চিত করা */
+    height: 100%; /* প্যারেন্ট #chat-container এর 100% উচ্চতা নেবে */
 }
 
 /* Sidebar এবং Online Users List - মোবাইল পপ-আপের জন্য */
@@ -194,6 +202,8 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0; /* flex আইটেমের জন্য প্রয়োজনীয় */
+    /* নতুন: উচ্চতা নিশ্চিত করা */
+    height: 100%; /* প্যারেন্ট #main-chat-content এর 100% উচ্চতা নেবে */
 }
 
 #top-bar {
@@ -206,7 +216,7 @@ body {
     font-weight: 500;
     font-size: 1.1em;
     border-bottom: 1px solid #0056b3;
-    flex-shrink: 0;
+    flex-shrink: 0; /* এটি যেন ছোট না হয় */
     gap: 10px;
 }
 
@@ -290,11 +300,14 @@ body {
     list-style-type: none;
     margin: 0;
     padding: 15px;
-    flex-grow: 1;
-    overflow-y: auto;
+    flex-grow: 1; /* উপলব্ধ স্থানের বেশিরভাগ দখল করবে */
+    overflow-y: auto; /* প্রয়োজনে উল্লম্বভাবে স্ক্রল করবে */
     background-color: #f8f9fa;
-    display: flex; /* নতুন: মেসেজগুলো ফ্লেক্স কন্টেইনারে থাকবে */
-    flex-direction: column; /* নতুন: মেসেজগুলো কলাম বরাবর সাজানো হবে */
+    display: flex;
+    flex-direction: column;
+    /* নতুন: উচ্চতা ব্যবস্থাপনার জন্য */
+    flex-basis: 0; /* flex-grow এর সাথে ব্যবহার করা হয় */
+    min-height: 0; /* overflow: auto; ঠিকভাবে কাজ করার জন্য */
 }
 
 /* মেসেজ কন্টেইনারের জন্য বেসিক স্টাইল */
@@ -418,7 +431,7 @@ body {
     display: flex;
     gap: 10px;
     border-top: 1px solid #ddd;
-    flex-shrink: 0;
+    flex-shrink: 0; /* এটি যেন ছোট না হয় এবং ফ্লেক্স কন্টেইনারে তার স্থান বজায় রাখে */
     align-items: center;
 }
 #input {
@@ -743,13 +756,14 @@ body {
 @media (max-width: 768px) {
     #chat-container {
         width: 100%;
-        height: 100vh;
+        /* নতুন: height: 100% করা হয়েছে */
+        height: 100%; /* প্যারেন্ট বডির 100% উচ্চতা নেবে */
         border-radius: 0; /* মোবাইলে কোণা গোলাকার না রেখে পুরো স্ক্রিন জুড়ে */
         box-shadow: none; /* মোবাইলে বক্স শ্যাডো দরকার নেই */
     }
 
     body {
-        min-height: 100vh;
+        /* min-height: 100vh; এটি সরিয়ে শুধু height: 100%; ব্যবহার করা হয়েছে */
         align-items: stretch; /* verticall stretched */
     }
 
@@ -889,7 +903,6 @@ body {
 /* 480px এর নিচে খুব ছোট স্ক্রিনের জন্য আরও ফাইন-টিউনিং */
 @media (max-width: 480px) {
     #form {
-        /* এখানেও এক লাইন রাখা হলো, তবে প্রয়োজন হলে flex-wrap: wrap; ফিরিয়ে আনা যেতে পারে */
         flex-wrap: nowrap; /* নিশ্চিত করে এক লাইনে থাকবে */
         justify-content: space-between; /* উপাদানগুলো ছড়িয়ে থাকবে */
         gap: 5px; /* গ্যাপ আরও কমানো হলো */
@@ -900,9 +913,9 @@ body {
         min-width: 80px; /* খুব ছোট স্ক্রিনে ইনপুটের সর্বনিম্ন প্রস্থ */
     }
     #emoji-btn, #form > button {
-        width: auto; /* বাটনগুলোর প্রস্থ অটো */
-        padding: 8px 10px; /* প্যাডিং কমানো হলো */
-        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
+        width: auto;
+        padding: 8px 10px;
+        font-size: 1em;
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {
