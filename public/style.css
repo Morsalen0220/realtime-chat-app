@@ -1,4 +1,4 @@
-/* style.css ফাইলটি খুলুন এবং এই কোডগুলো যোগ/পরিবর্তন করুন */
+/* style.css ফাইলটি খুলুন এবং এই কোডগুলো যোগ/পরিবorton করুন */
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
@@ -262,13 +262,6 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
 }
-#room-selection-buttons .room-btn {
-    background-color: #e0e5ec;
-    font-size: 0.9em;
-    font-weight: 500;
-    color: #555;
-    box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.8);
-}
 #room-selection-buttons .room-btn:hover {
     box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
@@ -355,7 +348,6 @@ body {
 /* অন্যের মেসেজের স্টাইল (বাম দিকে, সাদা) */
 .message.theirs {
     align-self: flex-start;
-    /* margin-right: auto; /* বাম দিকে ধাক্কা দিতে */ */
 }
 
 .message.theirs .message-content {
@@ -368,7 +360,6 @@ body {
 .message.mine {
     align-self: flex-end;
     flex-direction: row-reverse;
-    /* margin-left: auto; /* ডান দিকে ধাক্কা দিতে */ */
 }
 
 .message.mine .message-content {
@@ -483,6 +474,8 @@ body {
     width: 80%;
     max-width: 400px;
     word-wrap: break-word;
+    /* মোডালের জন্য শ্যাডো পরিবর্তন করা হয়েছে */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* হালকা শ্যাডো */
 }
 .close-button {
     color: #aaa;
@@ -683,17 +676,6 @@ body {
     gap: 10px;
 }
 
-.notification {
-    padding: 15px 20px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.4s ease-in-out;
-}
-
 .notification.show {
     opacity: 1;
     transform: translateX(0);
@@ -774,110 +756,133 @@ body {
     /* সাইডবারকে পপ-আপ হিসেবে */
     #sidebar {
         position: fixed;
-        left: 0;
+        right: 0; /* ডানদিক থেকে আসবে */
+        left: auto; /* বামদিক থেকে আসা বাতিল */
         top: 0;
         height: 100%;
-        z-index: 1000; /* মেনু ওভারলের উপরে */
-        transform: translateX(-100%); /* ডিফল্টভাবে লুকানো */
-        box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
+        z-index: 1002; /* অন্যান্য মোডালের উপরে */
+        transform: translateX(100%); /* ডিফল্টভাবে ডানদিকে লুকানো */
+        box-shadow: -5px 0px 15px rgba(0,0,0,0.2); /* বামদিকে শ্যাডো */
         width: 280px; /* মোবাইলে সাইডবারের প্রস্থ একটু বাড়ানো হলো */
+        border-right: none; /* মোবাইলে এই বর্ডার দরকার নেই */
+        border-left: 1px solid #ddd; /* বামদিকে বর্ডার */
     }
     
     #sidebar.sidebar-open {
         transform: translateX(0); /* যখন খোলা হবে */
     }
 
+    /* হ্যামবার্গার মেনু এবং অনলাইন ইউজারের সংখ্যা ডিসপ্লে */
     #hamburger-menu {
         display: block; /* মোবাইলে হ্যামবার্গার মেনু দেখাও */
-        margin-right: auto; /* হ্যামবার্গার মেনু বামে সরাতে */
+        margin-right: 10px; /* হ্যামবার্গার মেনু এবং বর্তমান রুমের নামের মধ্যে মার্জিন */
     }
-
-    #menu-overlay {
-        display: block; /* মোবাইলে ওভারলে দেখাও যখন সাইডবার খোলা হয় */
+    #onlineUsersCountDisplay {
+        display: block; /* মোবাইলে দেখাও */
+        margin-left: 10px; /* ডান দিকে সরাতে */
     }
 
     /* টপ বারে পরিবর্তন */
     #top-bar {
-        justify-content: space-between;
-        padding: 10px; /* প্যাডিং কমানো হলো */
-        font-size: 1em; /* ফন্ট সাইজ কমানো হলো */
+        justify-content: space-between; /* উপাদানগুলো সমানভাবে ছড়াবে */
+        padding: 10px;
+        font-size: 1em;
+        flex-wrap: nowrap; /* চেষ্টা করবে এক লাইনে রাখতে */
+        overflow-x: hidden; /* যদি ওভারফ্লো হয় তাহলে লুকাবে, স্ক্রলবার দেখাবে না */
     }
     #currentRoomDisplayTop {
-        margin-left: 10px;
+        margin-left: 5px; /* মার্জিন কমানো হয়েছে */
         flex-grow: 1; /* রুমের নাম যেন বেশি জায়গা নেয় */
-        text-align: center;
-        font-size: 0.9em; /* মোবাইলে রুমের নামের ফন্ট ছোট হবে */
+        text-align: center; /* সেন্টারে দেখানোর জন্য */
+        font-size: 0.9em;
+        min-width: 0; /* ফ্লেক্স-আইটেমের ওভারফ্লো ঠিক করতে */
+        white-space: nowrap; /* এক লাইনে রাখতে */
+        overflow: hidden; /* অতিরিক্ত টেক্সট লুকাবে */
+        text-overflow: ellipsis; /* শেষে ... দেখাবে */
     }
     #loggedInUserInfo {
-        font-size: 0.8em; /* মোবাইলে ইউজারের তথ্যের ফন্ট ছোট হবে */
-        white-space: nowrap; /* যাতে এক লাইনে থাকে */
-        overflow: hidden; /* ওভারফ্লো হলে লুকানো */
-        text-overflow: ellipsis; /* শেষে ডট ডট (...) দেখানো */
-        max-width: 80px; /* একটি নির্দিষ্ট প্রস্থের বেশি না যায় */
-        margin-left: 5px; /* মার্জিন কমানো হলো */
+        font-size: 0.8em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
+        margin-left: 5px;
     }
     #user-avatar-top {
-        width: 30px; /* মোবাইলে অ্যাভাটার ছোট করা হলো */
+        width: 30px;
         height: 30px;
+        flex-shrink: 0; /* যেন অ্যাভাটার ছোট না হয় */
     }
 
     /* টপ বারের বাটনগুলো লুকানো */
-    #showRoomsBtn, #clearChatBtn, #logoutBtn { /* লগআউট বাটনও মোবাইলে হ্যামবার্গার মেনুতে যেতে পারে */
-        display: none !important; /* নিশ্চিত করার জন্য */
+    #showRoomsBtn, #clearChatBtn, #logoutBtn {
+        display: none !important;
     }
     /* RegisterAsUserBtn মোবাইলের জন্য টপ বারে দেখানো */
     #registerAsUserBtn {
-        display: block !important; /* এই বাটনটি মোবাইলে দেখাতে হবে */
-        font-size: 0.8em; /* মোবাইলে ফন্ট ছোট */
+        display: block !important;
+        font-size: 0.8em;
         padding: 6px 10px;
-        margin-left: auto; /* ডান দিকে সরাতে */
+        margin-left: 5px; /* ডানদিকে সামান্য মার্জিন */
+        flex-shrink: 0; /* যেন বাটন ছোট না হয় */
     }
 
 
     /* মেসেজ ইনপুট ফর্ম */
     #form {
-        flex-direction: row; /* মোবাইলে ইনপুট ফর্ম এক লাইনে রাখা হলো */
-        padding: 8px; /* প্যাডিং কমানো হলো */
+        /* এই মিডিয়া কোয়েরিতে flex-direction: row রাখা হলো যাতে এক লাইনে থাকে */
+        flex-direction: row; /* ডিফল্ট row রাখা হলো */
+        padding: 8px;
+        gap: 8px; /* গ্যাপ কমানো হলো */
     }
     #input {
-        padding: 8px 12px; /* ইনপুট ফিল্ডের প্যাডিং কমানো হলো */
-        font-size: 0.9em; /* ইনপুট ফন্ট ছোট হলো */
+        flex-grow: 1; /* ইনপুট ফিল্ড বাকি জায়গা নেবে */
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin-bottom: 0; /* মার্জিন বাতিল করা হলো */
     }
-    #form > button, #emoji-btn {
-        padding: 8px 15px; /* বাটনের প্যাডিং কমানো হলো */
-        font-size: 1.1em; /* বাটনের আইকন ছোট হলো */
+    #emoji-btn {
+        flex-shrink: 0; /* বাটন যেন ছোট না হয় */
+        font-size: 1.3em; /* ইমোজি বাটনের সাইজ অ্যাডজাস্ট */
+        padding: 0 5px; /* প্যাডিং অ্যাডজাস্ট */
+    }
+    #form > button { /* সেন্ড বাটন */
+        flex-shrink: 0; /* বাটন যেন ছোট না হয় */
+        font-size: 1.1em; /* সেন্ড বাটনের সাইজ অ্যাডজাস্ট */
+        padding: 8px 12px; /* প্যাডিং অ্যাডজাস্ট */
+        width: auto; /* প্রস্থ অটো */
     }
 
     /* মেসেজ এরিয়া */
     #messages {
-        padding: 10px; /* মেসেজ এরিয়ার প্যাডিং কমানো হলো */
+        padding: 10px;
     }
     .message {
-        max-width: calc(100% - 30px); /* মোবাইলে মেসেজের প্রস্থ বাড়ানো হলো */
-        font-size: 0.9em; /* মেসেজের ফন্ট ছোট হলো */
+        max-width: calc(100% - 30px);
+        font-size: 0.9em;
     }
     .message .chat-avatar {
-        width: 35px; /* মেসেজ অ্যাভাটার ছোট হলো */
+        width: 35px;
         height: 35px;
     }
     .timestamp {
-        font-size: 0.65em; /* টাইমস্ট্যাম্প ফন্ট ছোট হলো */
-        right: 8px; /* ডান দিক থেকে দূরত্ব কমানো হলো */
+        font-size: 0.65em;
+        right: 8px;
         bottom: 3px;
     }
 
     /* মডালগুলো মোবাইলে পুরো প্রস্থ জুড়ে */
     .modal-content {
-        width: 95%; /* মোবাইলে মডাল কন্টেন্ট পুরো প্রস্থ জুড়ে থাকবে */
-        padding: 15px; /* প্যাডিং কমানো হলো */
+        width: 95%;
+        padding: 15px;
     }
     #profile-modal .modal-content h2,
     #view-profile-modal .modal-content h2 {
-        font-size: 1.3em; /* মডাল হেডার ফন্ট ছোট হলো */
-        margin-bottom: 10px; /* মার্জিন কমানো হলো */
+        font-size: 1.3em;
+        margin-bottom: 10px;
     }
     #profile-details img {
-        width: 80px; /* প্রোফাইল ভিউ অ্যাভাটার ছোট হলো */
+        width: 80px;
         height: 80px;
     }
 }
@@ -885,16 +890,20 @@ body {
 /* 480px এর নিচে খুব ছোট স্ক্রিনের জন্য আরও ফাইন-টিউনিং */
 @media (max-width: 480px) {
     #form {
-        flex-wrap: wrap; /* ছোট স্ক্রিনে ফর্মের উপাদান র‍্যাপ হবে */
-        justify-content: center;
+        /* এখানেও এক লাইন রাখা হলো, তবে প্রয়োজন হলে flex-wrap: wrap; ফিরিয়ে আনা যেতে পারে */
+        flex-wrap: nowrap; /* নিশ্চিত করে এক লাইনে থাকবে */
+        justify-content: space-between; /* উপাদানগুলো ছড়িয়ে থাকবে */
+        gap: 5px; /* গ্যাপ আরও কমানো হলো */
     }
     #input {
-        width: 100%; /* ইনপুট ফিল্ড পুরো প্রস্থ জুড়ে */
-        margin-bottom: 8px; /* বাটনের উপরে মার্জিন */
+        flex-grow: 1;
+        width: auto; /* ইনপুট ফিল্ড অবশিষ্ট জায়গা নেবে */
+        min-width: 80px; /* খুব ছোট স্ক্রিনে ইনপুটের সর্বনিম্ন প্রস্থ */
     }
     #emoji-btn, #form > button {
-        width: calc(50% - 8px); /* ইmo ইমোজি এবং সেন্ড বাটন অর্ধেক প্রস্থ জুড়ে */
-        padding: 10px 0; /* প্যাডিং অ্যাডজাস্ট করা হলো */
+        width: auto; /* বাটনগুলোর প্রস্থ অটো */
+        padding: 8px 10px; /* প্যাডিং কমানো হলো */
+        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {
@@ -902,10 +911,10 @@ body {
         align-items: stretch;
     }
     #room-selection-buttons .room-btn, #private-code-section button, #private-code-section input {
-        width: 100%; /* পুরো প্রস্থ জুড়ে */
+        width: 100%;
     }
     #private-code-section button:not(:last-child) {
-        margin-bottom: 10px; /* বাটনগুলোর মধ্যে ফাঁকা */
+        margin-bottom: 10px;
     }
     #private-code-section input {
         margin-bottom: 10px;

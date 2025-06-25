@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 	<script src="https://cdn.jsdelivr.net/npm/emoji-button@latest/dist/index.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN যোগ করা হয়েছে Send আইকনের জন্য -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -24,6 +25,8 @@
                 <div id="register-form" style="display:none;">
                     <input type="text" id="registerUsername" placeholder="ইউজারনেম" autocomplete="off" />
                     <input type="password" id="registerPassword" placeholder="পাসওয়ার্ড" autocomplete="off" />
+                    <!-- DOB ফিল্ড যোগ করার জন্য, যদি প্রয়োজন হয় -->
+                    <!-- <input type="date" id="registerDob" placeholder="জন্মতারিখ" /> -->
                     <button id="registerBtn">রেজিস্টার</button>
                     <p>ইতিমধ্যে একাউন্ট আছে? <a href="#" id="showLogin">লগইন করুন</a></p>
                 </div>
@@ -32,8 +35,8 @@
         </div>
 
         <div id="main-chat-content" style="display: none;">
-            <button id="hamburger-menu" class="top-bar-btn">☰</button>
-            <div id="menu-overlay"></div>
+            <!-- menu-overlay সাইডবারের সাথে কাজ করে, main-chat-content এর direct child হিসেবে থাকবে -->
+            <div id="menu-overlay"></div> 
 
             <div id="sidebar">
                 <h3>অনলাইন</h3>
@@ -41,14 +44,17 @@
             </div>
             <div id="chat-area">
                 <div id="top-bar">
-                    <button id="showRoomsBtn" class="top-bar-btn">রুমস</button>
+                    <!-- HAMBURGER MENU MOVED INSIDE TOP-BAR -->
+                    <button id="hamburger-menu" class="top-bar-btn">☰</button>
                     <span id="currentRoomDisplayTop"></span>
+                    <span id="onlineUsersCountDisplay" class="top-bar-btn" style="display: none; cursor: pointer;"></span>
+
                     <div id="user-profile-info">
                         <span id="loggedInUserInfo"></span>
                         <img id="user-avatar-top" src="avatars/avatar1.png" alt="My Avatar">
                     </div>
+                    <button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">রেজিস্টার করুন</button>
                     <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
-					<button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">রেজিস্টার করুন</button>
                     <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
                 </div>
                 <div id="room-selection-buttons">
@@ -65,6 +71,7 @@
                 <form id="form" action="">
                     <button type="button" id="emoji-btn">😀</button>
                     <input id="input" autocomplete="off" placeholder="মেসেজ লিখুন..." />
+                    <!-- "প্রেরণ করুন" বাটনের জায়গায় Font Awesome আইকন ব্যবহার করা হয়েছে -->
                     <button type="submit"><i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
@@ -121,7 +128,6 @@
         </div>
     </div>
 </div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js" defer></script>
 </body>

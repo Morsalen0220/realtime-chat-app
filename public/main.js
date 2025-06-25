@@ -49,7 +49,6 @@ const UI_ELEMENTS = {
     roomSelectionButtons: document.getElementById('room-selection-buttons'),
     publicChatBtn: document.getElementById('publicChatBtn'),
     privateChatBtn: document.getElementById('privateChatBtn'),
-	registerAsUserBtn: document.getElementById('registerAsUserBtn'),
     privateCodeSection: document.getElementById('private-code-section'),
     roomCodeInput: document.getElementById('roomCodeInput'),
     joinPrivateRoomBtn: document.getElementById('joinPrivateRoomBtn'),
@@ -77,10 +76,14 @@ const UI_ELEMENTS = {
     profileViewAvatar: document.getElementById('profile-view-avatar'),
     profileViewUsername: document.getElementById('profile-view-username'),
     profileViewStatus: document.getElementById('profile-view-status'),
-	deleteConfirmationModal: document.getElementById('delete-confirmation-modal'),
+    
+    // নতুন UI_ELEMENTS যোগ করা হয়েছে
+    deleteConfirmationModal: document.getElementById('delete-confirmation-modal'),
     deleteModalCloseButton: document.getElementById('deleteModalCloseButton'),
     confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
-    cancelDeleteBtn: document.getElementById('cancelDeleteBtn')
+    cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
+    registerAsUserBtn: document.getElementById('registerAsUserBtn'),
+    onlineUsersCountDisplay: document.getElementById('onlineUsersCountDisplay') 
 };
 
 let username = '';
@@ -89,24 +92,24 @@ let userType = 'guest';
 
 // ইমোজি পিকারের জন্য নতুন কোড
 const emojiBtn = document.getElementById('emoji-btn');
-const messageInput = document.getElementById('input'); // তোমার মেসেজ ইনপুট ফিল্ডের আইডি
+const messageInput = document.getElementById('input'); 
 
 if (emojiBtn && messageInput) {
     const picker = new EmojiButton({
-        position: 'top-start', // পিকারটি বাটনের উপরে বাম দিকে দেখাবে
-        theme: 'auto', // সিস্টেম থিম (লাইট/ডার্ক) অনুসরণ করবে
-        showSearch: true, // সার্চ বার দেখাবে
-        showRecents: true, // সাম্প্রতিক ব্যবহৃত ইমোজি দেখাবে
-        showVariants: true // ইমোজি ভ্যারিয়েন্ট দেখাবে (যেমন স্কিন টোন)
+        position: 'top-start', 
+        theme: 'auto', 
+        showSearch: true, 
+        showRecents: true, 
+        showVariants: true 
     });
 
     picker.on('emoji', emoji => {
-        messageInput.value += emoji; // নির্বাচিত ইমোজি ইনপুট ফিল্ডে যোগ করবে
-        messageInput.focus(); // ইনপুট ফিল্ডে ফোকাস রাখবে
+        messageInput.value += emoji; 
+        messageInput.focus(); 
     });
 
     emojiBtn.addEventListener('click', () => {
-        picker.showPicker(emojiBtn); // বাটনে ক্লিক করলে পিকার দেখাবে
+        picker.showPicker(emojiBtn); 
     });
 }
 
@@ -130,8 +133,8 @@ function setUIState(state) {
         UI_ELEMENTS.mainChatContent.style.display = 'flex';
         UI_ELEMENTS.loggedInUserInfo.textContent = `${username}`;
         UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
-		// main.js -> setUIState ফাংশনের 'chat' স্টেট এর মধ্যে
-UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
+        UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
+
         const avatar = localStorage.getItem('avatar');
         if (avatar) UI_ELEMENTS.userAvatarTop.src = avatar;
     }
@@ -167,52 +170,61 @@ function handleAuthSuccess(data) {
     authenticateSocket();
 };
 
-UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
-UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
+if (UI_ELEMENTS.showRegister) UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
+if (UI_ELEMENTS.showLogin) UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
 
-UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
+if (UI_ELEMENTS.loginBtn) UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
     const body = { username: UI_ELEMENTS.loginUsername.value.trim(), password: UI_ELEMENTS.loginPassword.value.trim() };
     if (!body.username || !body.password) return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error');
     const { ok, data } = await apiRequest('/api/login', body);
     if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
 });
 
-UI_ELEMENTS.registerBtn.addEventListener('click', async () => {
+if (UI_ELEMENTS.registerBtn) UI_ELEMENTS.registerBtn.addEventListener('click', async () => {
     const body = { username: UI_ELEMENTS.registerUsername.value.trim(), password: UI_ELEMENTS.registerPassword.value.trim() };
     if (!body.username || !body.password) return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error');
     const { ok, data } = await apiRequest('/api/register', body);
     if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
 });
 
-UI_ELEMENTS.guestBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.guestBtn) UI_ELEMENTS.guestBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
     const guestId = (localStorage.getItem('userId') && localStorage.getItem('userId').startsWith('guest-')) ? localStorage.getItem('userId') : null;
     authenticateSocket(guestId);
 });
 
-UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
     ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms', 'avatar', 'status'].forEach(key => localStorage.removeItem(key));
     socket.disconnect().connect();
     showNotification('সফলভাবে লগআউট হয়েছে।');
     setUIState('login');
 });
 
-UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.addEventListener('click', () => {
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('userId'); 
+    localStorage.removeItem('userType'); 
+    setUIState('register'); 
+    showNotification('রেজিস্টার করার জন্য স্বাগত!', 'success');
+});
+
+
+if (UI_ELEMENTS.clearChatBtn) UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
     if (confirm('আপনি কি এই রুমের সব মেসেজ সবার জন্য স্থায়ীভাবে মুছে ফেলতে চান?')) {
         socket.emit('clear room chat', { roomCode: currentRoom });
     }
 });
 
-UI_ELEMENTS.userProfileInfo.addEventListener('click', () => {
+if (UI_ELEMENTS.userProfileInfo) UI_ELEMENTS.userProfileInfo.addEventListener('click', () => {
     UI_ELEMENTS.statusInput.value = localStorage.getItem('status') || '';
     UI_ELEMENTS.profileModal.style.display = 'flex';
 });
 
-UI_ELEMENTS.profileModalCloseBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.profileModalCloseBtn) UI_ELEMENTS.profileModalCloseBtn.addEventListener('click', () => {
     UI_ELEMENTS.profileModal.style.display = 'none';
 });
 
-UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
+if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
     if (e.target.classList.contains('avatar-choice')) {
         const newAvatar = e.target.dataset.avatar;
         const { ok, data } = await apiRequest('/api/user/avatar', { avatar: newAvatar });
@@ -226,7 +238,7 @@ UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
     }
 });
 
-UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
+if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
     const newStatus = UI_ELEMENTS.statusInput.value.trim();
     if (!newStatus) return showNotification('স্ট্যাটাস খালি রাখা যাবে না।', 'error');
     UI_ELEMENTS.saveStatusBtn.disabled = true;
@@ -243,20 +255,18 @@ UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
     UI_ELEMENTS.saveStatusBtn.textContent = 'স্ট্যাটাস সেভ করুন';
 });
 
-// main.js -> displayMessage ফাংশন
-
+// displayMessage ফাংশন
 function displayMessage(data) {
     const item = document.createElement('li');
     item.dataset.messageId = data._id;
 
     const currentUserId = localStorage.getItem('userId');
 
-    // মেসেজের ধরনের উপর ভিত্তি করে ক্লাস যোগ করা হচ্ছে
     item.classList.add('message');
     if (data.userId === currentUserId) {
-        item.classList.add('mine'); // আমার নিজের মেসেজ
+        item.classList.add('mine'); 
     } else {
-        item.classList.add('theirs'); // অন্য ইউজারের মেসেজ
+        item.classList.add('theirs'); 
     }
 
     let buttonsHTML = '';
@@ -295,15 +305,21 @@ function displayMessage(data) {
 
 function joinRoom(roomName) {
     currentRoom = roomName;
-    UI_ELEMENTS.currentRoomDisplayTop.textContent = `আপনি ${currentRoom === 'public' ? 'পাবলিক চ্যাটে' : currentRoom + ' রুমে'} আছেন`;
-    UI_ELEMENTS.messages.innerHTML = '';
+    if (UI_ELEMENTS.currentRoomDisplayTop) {
+        UI_ELEMENTS.currentRoomDisplayTop.textContent = `আপনি ${currentRoom === 'public' ? 'পাবলিক চ্যাটে' : currentRoom + ' রুমে'} আছেন`;
+    }
+    if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.innerHTML = '';
+    }
     socket.emit('join room', currentRoom);
     localStorage.setItem('lastRoom', roomName);
     if (roomName !== 'public') {
         localStorage.setItem('savedPrivateCode', roomName);
         addRoomToSavedList(roomName);
     }
-    UI_ELEMENTS.roomsModal.style.display = 'none';
+    if (UI_ELEMENTS.roomsModal) {
+        UI_ELEMENTS.roomsModal.style.display = 'none';
+    }
 };
 
 function addRoomToSavedList(roomCode) {
@@ -317,13 +333,15 @@ function addRoomToSavedList(roomCode) {
 
 function renderSavedRooms() {
     const savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
-    UI_ELEMENTS.savedRoomsList.innerHTML = '';
-    ['public', ...savedRooms.filter(r => r !== 'public')].forEach(room => {
-        const li = document.createElement('li');
-        li.textContent = room === 'public' ? 'পাবলিক চ্যাট' : room;
-        li.addEventListener('click', () => joinRoom(room));
-        UI_ELEMENTS.savedRoomsList.appendChild(li);
-    });
+    if (UI_ELEMENTS.savedRoomsList) {
+        UI_ELEMENTS.savedRoomsList.innerHTML = '';
+        ['public', ...savedRooms.filter(r => r !== 'public')].forEach(room => {
+            const li = document.createElement('li');
+            li.textContent = room === 'public' ? 'পাবলিক চ্যাট' : room;
+            li.addEventListener('click', () => joinRoom(room));
+            UI_ELEMENTS.savedRoomsList.appendChild(li);
+        });
+    }
 };
 
 function authenticateSocket(guestId = null) {
@@ -351,45 +369,39 @@ window.addEventListener('load', () => {
     if (token && userType === 'registered') authenticateSocket();
     else if (userId && userType === 'guest') authenticateSocket(userId);
     else setUIState('login');
-});
-// main.js ফাইলের শেষে (অন্যান্য ইভেন্ট লিসেনারের সাথে)
-UI_ELEMENTS.deleteModalCloseButton.addEventListener('click', () => {
-    UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
-});
 
-UI_ELEMENTS.cancelDeleteBtn.addEventListener('click', () => {
-    UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
-});
-
-UI_ELEMENTS.confirmDeleteBtn.addEventListener('click', () => {
-    const messageIdToDelete = UI_ELEMENTS.confirmDeleteBtn.dataset.messageId;
-    if (messageIdToDelete) {
-        socket.emit('delete message', { messageId: messageIdToDelete });
-        UI_ELEMENTS.deleteConfirmationModal.style.display = 'none'; // মোডাল লুকান
+    // অনলাইন ব্যবহারকারীদের তালিকায় ক্লিক ইভেন্ট লিসেনার যোগ করা (একবারই যোগ হবে)
+    if (UI_ELEMENTS.onlineUsersList) {
+        UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
+            const targetUserElement = e.target.closest('.online-user');
+            if (targetUserElement) {
+                const userId = targetUserElement.dataset.userId;
+                if (typeof userId === 'string' && (userId.length === 24 || userId.startsWith('guest-'))) {
+                    showUserProfile(userId);
+                } else {
+                    console.warn('Invalid userId found in data-user-id:', userId);
+                }
+            }
+        });
+    } else {
+        console.error("UI_ELEMENTS.onlineUsersList not found. Profile view click handler not attached.");
     }
 });
 
-// মোডালের বাইরে ক্লিক করলে বন্ধ করার জন্য
-window.addEventListener('click', (event) => {
-    if (event.target === UI_ELEMENTS.deleteConfirmationModal) {
-        UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
-    }
-});
-
-UI_ELEMENTS.publicChatBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.addEventListener('click', () => {
     UI_ELEMENTS.publicChatBtn.classList.add('active');
-    UI_ELEMENTS.privateChatBtn.classList.remove('active');
-    UI_ELEMENTS.privateCodeSection.style.display = 'none';
+    if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.classList.remove('active');
+    if (UI_ELEMENTS.privateCodeSection) UI_ELEMENTS.privateCodeSection.style.display = 'none';
     joinRoom('public');
 });
 
-UI_ELEMENTS.privateChatBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('click', () => {
     UI_ELEMENTS.privateChatBtn.classList.add('active');
-    UI_ELEMENTS.publicChatBtn.classList.remove('active');
-    UI_ELEMENTS.privateCodeSection.style.display = 'flex';
+    if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.classList.remove('active');
+    if (UI_ELEMENTS.privateCodeSection) UI_ELEMENTS.privateCodeSection.style.display = 'flex';
 });
 
-UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) return showNotification('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!', 'error');
     socket.emit('check room existence', privateCode, (exists) => {
@@ -398,7 +410,7 @@ UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
     });
 });
 
-UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
+if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) return showNotification('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!', 'error');
     socket.emit('create private room', privateCode, username, (response) => {
@@ -411,7 +423,7 @@ UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
     });
 });
 
-UI_ELEMENTS.form.addEventListener('submit', (e) => {
+if (UI_ELEMENTS.form) UI_ELEMENTS.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const message = UI_ELEMENTS.input.value.trim();
     if (message) {
@@ -441,16 +453,8 @@ function renderReactions(messageElement, reactions) {
         reactionsContainer.appendChild(reactionBtn);
     }
 }
-// main.js ফাইলের শেষে (অন্যান্য ইভেন্ট লিসেনারের সাথে)
-UI_ELEMENTS.registerAsUserBtn.addEventListener('click', () => {
-    localStorage.removeItem('token'); // বর্তমান গেস্ট সেশন টোকেন মুছে ফেলা
-    localStorage.removeItem('userId'); // গেস্ট ইউজার আইডি মুছে ফেলা
-    localStorage.removeItem('userType'); // গেস্ট টাইপ মুছে ফেলা
-    setUIState('register'); // রেজিস্ট্রেশন ফর্মে নিয়ে যাওয়া
-    showNotification('রেজিস্টার করার জন্য স্বাগত!', 'success');
-});
 
-UI_ELEMENTS.messages.addEventListener('click', (e) => {
+if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => {
     const messageContent = e.target.closest('.message-content');
     const messageLi = e.target.closest('li[data-message-id]');
     
@@ -470,12 +474,11 @@ UI_ELEMENTS.messages.addEventListener('click', (e) => {
     }
     if (!messageLi) return;
     const messageId = messageLi.dataset.messageId;
-   // নতুন কোড: মেসেজ ডিলিট কনফার্মেশন মোডাল দেখানোর জন্য
-if (e.target.classList.contains('delete-btn')) {
-    // ক্লিক করা মেসেজের আইডি সংরক্ষণ করুন
-    UI_ELEMENTS.confirmDeleteBtn.dataset.messageId = messageId;
-    UI_ELEMENTS.deleteConfirmationModal.style.display = 'flex'; // মোডাল দেখান
-} else if (e.target.classList.contains('edit-btn')) {
+    
+    if (UI_ELEMENTS.confirmDeleteBtn && UI_ELEMENTS.deleteConfirmationModal && e.target.classList.contains('delete-btn')) {
+        UI_ELEMENTS.confirmDeleteBtn.dataset.messageId = messageId;
+        UI_ELEMENTS.deleteConfirmationModal.style.display = 'flex'; 
+    } else if (e.target.classList.contains('edit-btn')) {
         const textElem = messageLi.querySelector('.message-text');
         const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
         if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
@@ -484,31 +487,62 @@ if (e.target.classList.contains('delete-btn')) {
     }
 });
 
+// নতুন কোড: ডিলিট কনফার্মেশন মোডালের জন্য ইভেন্ট লিসেনার
+if (UI_ELEMENTS.deleteModalCloseButton) {
+    UI_ELEMENTS.deleteModalCloseButton.addEventListener('click', () => {
+        if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
+    });
+} else {
+    console.warn("Delete modal close button not found. Functionality may be impaired.");
+}
+
+if (UI_ELEMENTS.cancelDeleteBtn) {
+    UI_ELEMENTS.cancelDeleteBtn.addEventListener('click', () => {
+        if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
+    });
+} else {
+    console.warn("Delete modal cancel button not found. Functionality may be impaired.");
+}
+
+if (UI_ELEMENTS.confirmDeleteBtn) {
+    UI_ELEMENTS.confirmDeleteBtn.addEventListener('click', () => {
+        const messageIdToDelete = UI_ELEMENTS.confirmDeleteBtn.dataset.messageId;
+        if (messageIdToDelete) {
+            socket.emit('delete message', { messageId: messageIdToDelete });
+            if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none'; 
+        }
+    });
+} else {
+    console.warn("Delete modal confirm button not found. Functionality may be impaired.");
+}
+
+
 async function showUserProfile(userId) {
     if (!userId) return;
-    UI_ELEMENTS.viewProfileModal.style.display = 'flex';
-    UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...';
-    UI_ELEMENTS.profileViewStatus.textContent = '';
+    if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'flex';
+    if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...';
+    if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = '';
     try {
         const response = await fetch(`/api/user/${userId}`);
         const user = await response.json();
         if (response.ok) {
-            UI_ELEMENTS.profileViewAvatar.src = user.avatar;
-            UI_ELEMENTS.profileViewUsername.textContent = user.username;
-            UI_ELEMENTS.profileViewStatus.textContent = user.status;
+            if (UI_ELEMENTS.profileViewAvatar) UI_ELEMENTS.profileViewAvatar.src = user.avatar;
+            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = user.username;
+            if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = user.status;
         } else {
-            UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার পাওয়া যায়নি';
+            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার পাওয়া যায়নি';
         }
     } catch (error) {
-        UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি';
+        if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি';
+        console.error('Error fetching user profile:', error); 
     }
 }
 
 let typingIndicatorTimer;
-UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
+if (UI_ELEMENTS.input) UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
 
 socket.on('user typing', ({ username: typingUsername }) => {
-    if (typingUsername !== username) {
+    if (typingUsername !== username && UI_ELEMENTS.typingIndicator) {
         UI_ELEMENTS.typingIndicator.textContent = `${typingUsername} is typing...`;
         clearTimeout(typingIndicatorTimer);
         typingIndicatorTimer = setTimeout(() => { UI_ELEMENTS.typingIndicator.textContent = ''; }, 3000);
@@ -519,55 +553,48 @@ socket.on('user typing', ({ username: typingUsername }) => {
 socket.on('online users list', (users) => {
     const uniqueUsers = [...new Map(users.map(item => [item.userId, item])).values()];
     const listHtml = uniqueUsers.map(user =>
-        // এখানে img ট্যাগের মধ্যে class="online-user-avatar" থাকাটা জরুরি
         `<li class="online-user" data-user-id="${user.userId}">
             <img src="${user.avatar}" class="online-user-avatar" data-user-id="${user.userId}">
             <span class="online-status-dot"></span> 
-            ${user.username}
+            <span class="online-username-text">${user.username}</span> 
         </li>`
     ).join('');
-    UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
-
-    // অনলাইন ব্যবহারকারীদের তালিকায় ক্লিক ইভেন্ট লিসেনার যোগ করা হয়েছে
-    UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
-        const targetUserElement = e.target.closest('.online-user');
-        // নিশ্চিত করুন যে ক্লিকটি একটি প্রকৃত ব্যবহারকারীর আইটেমের উপর পড়েছে, তালিকার ব্যাকগ্রাউন্ডে নয়
-        if (targetUserElement) {
-            const userId = targetUserElement.dataset.userId;
-            if (userId) { // নিশ্চিত করুন userId আছে
-                showUserProfile(userId);
-            }
-        }
-    });
+    if (UI_ELEMENTS.onlineUsersList) {
+        UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
+    }
+    
+    if (UI_ELEMENTS.onlineUsersCountDisplay) {
+        UI_ELEMENTS.onlineUsersCountDisplay.textContent = `${uniqueUsers.length} অনলাইন`;
+    }
 });
 
-
 socket.on('previous messages', (msgs) => {
-    UI_ELEMENTS.messages.innerHTML = '';
-    msgs.forEach(displayMessage);
+    if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.innerHTML = '';
+        msgs.forEach(displayMessage);
+    }
 });
 
 socket.on('chat message', displayMessage);
 
-// main.js -> socket.on('user joined', ...)
-
 socket.on('user joined', (msg) => {
     const item = document.createElement('li');
-    // নতুন: সিস্টেম মেসেজের জন্য ক্লাস যোগ করা হয়েছে
     item.classList.add('message', 'system'); 
     item.innerHTML = `<i>${msg}</i>`;
-    UI_ELEMENTS.messages.appendChild(item);
+    if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.appendChild(item);
+    }
 });
 
 socket.on('message edited', ({ messageId, newMessageText }) => {
     const msgLi = document.querySelector(`li[data-message-id="${messageId}"]`);
     if (msgLi) {
         const textElem = msgLi.querySelector('.message-text');
-        textElem.textContent = newMessageText;
+        if (textElem) textElem.textContent = newMessageText;
         if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
             msgLi.querySelector('.message-actions')?.remove();
         }
-        if (!msgLi.querySelector('.edited-indicator')) {
+        if (!msgLi.querySelector('.edited-indicator') && textElem) {
             const indicator = document.createElement('small');
             indicator.className = 'edited-indicator';
             indicator.textContent = ' (edited)';
@@ -577,18 +604,20 @@ socket.on('message edited', ({ messageId, newMessageText }) => {
 });
 
 socket.on('chat cleared', () => {
-    UI_ELEMENTS.messages.innerHTML = '';
-    const item = document.createElement('li');
-    item.classList.add('system-message');
-    item.innerHTML = `<i>এই রুমের চ্যাট পরিষ্কার করা হয়েছে।</i>`;
-    UI_ELEMENTS.messages.appendChild(item);
+    if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.innerHTML = '';
+        const item = document.createElement('li');
+        item.classList.add('system-message');
+        item.innerHTML = `<i>এই রুমের চ্যাট পরিষ্কার করা হয়েছে।</i>`;
+        UI_ELEMENTS.messages.appendChild(item);
+    }
 });
 
 socket.on('avatar updated', ({ userId, avatar }) => {
     document.querySelectorAll(`img.chat-avatar[data-user-id="${userId}"]`).forEach(img => {
         img.src = avatar;
     });
-    if (localStorage.getItem('userId') === userId) {
+    if (localStorage.getItem('userId') === userId && UI_ELEMENTS.userAvatarTop) {
         UI_ELEMENTS.userAvatarTop.src = avatar;
     }
 });
@@ -602,20 +631,35 @@ socket.on('reactions updated', ({ messageId, reactions }) => {
 
 socket.on('error', (message) => { showNotification(message, 'error'); setUIState('login'); });
 
-UI_ELEMENTS.showRoomsBtn.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'flex'; });
-UI_ELEMENTS.closeButton.addEventListener('click', () => { UI_ELEMENTS.roomsModal.style.display = 'none'; });
-window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'none'; });
+if (UI_ELEMENTS.showRoomsBtn) UI_ELEMENTS.showRoomsBtn.addEventListener('click', () => { 
+    if (UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'flex'; 
+});
+if (UI_ELEMENTS.closeButton) UI_ELEMENTS.closeButton.addEventListener('click', () => { 
+    if (UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'none'; 
+});
+window.addEventListener('click', (event) => {
+    if (UI_ELEMENTS.roomsModal && event.target === UI_ELEMENTS.roomsModal) UI_ELEMENTS.roomsModal.style.display = 'none';
+    if (UI_ELEMENTS.deleteConfirmationModal && event.target === UI_ELEMENTS.deleteConfirmationModal) {
+        UI_ELEMENTS.deleteConfirmationModal.style.display = 'none'; 
+    }
+    if (UI_ELEMENTS.viewProfileModal && event.target === UI_ELEMENTS.viewProfileModal) {
+        UI_ELEMENTS.viewProfileModal.style.display = 'none';
+    }
+});
 
-UI_ELEMENTS.hamburgerMenu.addEventListener('click', () => {
-    UI_ELEMENTS.sidebar.classList.add('sidebar-open');
-    UI_ELEMENTS.menuOverlay.style.display = 'block';
+if (UI_ELEMENTS.hamburgerMenu) UI_ELEMENTS.hamburgerMenu.addEventListener('click', () => {
+    if (UI_ELEMENTS.sidebar) UI_ELEMENTS.sidebar.classList.add('sidebar-open');
+    if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.style.display = 'block';
 });
-UI_ELEMENTS.menuOverlay.addEventListener('click', () => {
-    UI_ELEMENTS.sidebar.classList.remove('sidebar-open');
-    UI_ELEMENTS.menuOverlay.style.display = 'none';
+if (UI_ELEMENTS.onlineUsersCountDisplay) UI_ELEMENTS.onlineUsersCountDisplay.addEventListener('click', () => {
+    if (UI_ELEMENTS.sidebar) UI_ELEMENTS.sidebar.classList.add('sidebar-open');
+    if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.style.display = 'block';
+});
+if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.addEventListener('click', () => {
+    if (UI_ELEMENTS.sidebar) UI_ELEMENTS.sidebar.classList.remove('sidebar-open');
+    if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.style.display = 'none';
 });
 
-UI_ELEMENTS.viewProfileModalCloseBtn.addEventListener('click', () => {
-    UI_ELEMENTS.viewProfileModal.style.display = 'none';
+if (UI_ELEMENTS.viewProfileModalCloseBtn) UI_ELEMENTS.viewProfileModalCloseBtn.addEventListener('click', () => {
+    if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'none';
 });
-window.addEventListener('click', (event) => { if (event.target === UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'none'; });
