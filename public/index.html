@@ -117,7 +117,18 @@
         </div>
     </div>
 </div>
-
+    <div id="delete-confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="deleteModalCloseButton">&times;</span>
+            <h2>মেসেজ মুছুন</h2>
+            <p>আপনি কি নিশ্চিত যে এই মেসেজটি মুছে ফেলতে চান?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="action-btn confirm-btn">হ্যাঁ, মুছুন</button>
+                <button id="cancelDeleteBtn" class="action-btn cancel-btn">না, বাতিল করুন</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js" defer></script>
 </body>
