@@ -53,18 +53,18 @@
                         <span id="loggedInUserInfo"></span>
                         <img id="user-avatar-top" src="avatars/avatar1.png" alt="My Avatar">
                     </div>
-                    <button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">রেজিস্টার করুন</button>
+                    <button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">ইউজার হন</button> <!-- সংক্ষিপ্ত টেক্সট -->
                     <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
                     <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
                 </div>
                 <div id="room-selection-buttons">
-                    <button id="publicChatBtn" class="room-btn active">পাবলিক চ্যাট</button>
-                    <button id="privateChatBtn" class="room-btn">প্রাইভেট চ্যাট</button>
+                    <button id="publicChatBtn" class="room-btn active">পাবলিক</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <button id="privateChatBtn" class="room-btn">প্রাইভেট</button> <!-- সংক্ষিপ্ত টেক্সট -->
                 </div>
                 <div id="private-code-section" style="display: none;">
-                    <input type="text" id="roomCodeInput" placeholder="প্রাইভেট কোড লিখুন" autocomplete="off" />
-                    <button id="joinPrivateRoomBtn">রুমে প্রবেশ করুন</button>
-                    <button id="createPrivateRoomBtn">নতুন রুম তৈরি করুন</button>
+                    <input type="text" id="roomCodeInput" placeholder="প্রাইভেট কোড" autocomplete="off" /> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <button id="joinPrivateRoomBtn">প্রবেশ</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <button id="createPrivateRoomBtn">তৈরি</button> <!-- সংক্ষিপ্ত টেক্সট -->
                 </div>
                 <ul id="messages"></ul>
                 <div id="typing-indicator"></div>
@@ -81,7 +81,7 @@
     <div id="rooms-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>সংরক্ষিত রুমসমূহ</h2>
+            <h2>সংরক্ষিত রুম</h2> <!-- সংক্ষিপ্ত টেক্সট -->
             <ul id="saved-rooms-list"></ul>
         </div>
     </div>
@@ -89,9 +89,9 @@
     <div id="profile-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>প্রোফাইল সেটিংস</h2>
+            <h2>প্রোফাইল</h2> <!-- সংক্ষিপ্ত টেক্সট -->
             <div id="avatar-selection">
-                <p>আপনার অ্যাভাটার বেছে নিন:</p>
+                <p>আপনার অ্যাভাটার:</p> <!-- সংক্ষিপ্ত টেক্সট -->
                 <div class="avatar-options">
                     <img src="avatars/avatar1.png" class="avatar-choice" data-avatar="avatars/avatar1.png" alt="Avatar 1">
                     <img src="avatars/avatar2.png" class="avatar-choice" data-avatar="avatars/avatar2.png" alt="Avatar 2">
@@ -101,9 +101,9 @@
             </div>
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
             <div id="status-update-section">
-                <p>আপনার স্ট্যাটাস পরিবর্তন করুন:</p>
-                <textarea id="status-input" rows="3" maxlength="150" placeholder="আপনার স্ট্যাটাস এখানে লিখুন..."></textarea>
-                <button id="save-status-btn">স্ট্যাটাস সেভ করুন</button>
+                <p>আপনার স্ট্যাটাস:</p> <!-- সংক্ষিপ্ত টেক্সট -->
+                <textarea id="status-input" rows="3" maxlength="150" placeholder="স্ট্যাটাস লিখুন..."></textarea> <!-- সংক্ষিপ্ত টেক্সট -->
+                <button id="save-status-btn">সেভ করুন</button> <!-- সংক্ষিপ্ত টেক্সট -->
             </div>
         </div>
     </div>
@@ -113,21 +113,11 @@
         <div id="profile-details">
             <img id="profile-view-avatar" src="avatars/avatar1.png" alt="User Avatar">
             <h2 id="profile-view-username">ইউজারনেম</h2>
-            <p id="profile-view-status">স্ট্যাটাস এখানে দেখা যাবে...</p>
+            <p id="profile-view-status">স্ট্যাটাস এখানে...</p> <!-- সংক্ষিপ্ত টেক্সট -->
         </div>
     </div>
 </div>
-<div id="delete-confirmation-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" id="deleteModalCloseButton">&times;</span>
-        <h2>মেসেজ মুছুন</h2>
-        <p>আপনি কি নিশ্চিত যে এই মেসেজটি মুছে ফেলতে চান?</p>
-        <div class="modal-buttons">
-            <button id="confirmDeleteBtn" class="action-btn confirm-btn">হ্যাঁ, মুছুন</button>
-            <button id="cancelDeleteBtn" class="action-btn cancel-btn">না, বাতিল করুন</button>
-        </div>
-    </div>
-</div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js" defer></script>
 </body>

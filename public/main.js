@@ -1,11 +1,11 @@
 // নোটিফিকেশন দেখানোর জন্য একটি হেল্পার ফাংশন
-function showNotification(message, type = 'success') {
+function showNotification(msg, type = 'success') { // msg (মেসেজ) সংক্ষেপে
     const container = document.getElementById('notification-container');
-    if (!container) return; // কন্টেইনার না থাকলে কিছুই করবে না
+    if (!container) return; 
 
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = message;
+    notification.textContent = msg; // msg ব্যবহার করা হয়েছে
 
     container.appendChild(notification);
 
@@ -77,7 +77,6 @@ const UI_ELEMENTS = {
     profileViewUsername: document.getElementById('profile-view-username'),
     profileViewStatus: document.getElementById('profile-view-status'),
     
-    // নতুন UI_ELEMENTS যোগ করা হয়েছে
     deleteConfirmationModal: document.getElementById('delete-confirmation-modal'),
     deleteModalCloseButton: document.getElementById('deleteModalCloseButton'),
     confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
@@ -132,13 +131,13 @@ function setUIState(state) {
     } else if (state === 'chat') {
         UI_ELEMENTS.mainChatContent.style.display = 'flex';
         UI_ELEMENTS.loggedInUserInfo.textContent = `${username}`;
-        UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
-        UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
+        if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
+        if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
 
         const avatar = localStorage.getItem('avatar');
-        if (avatar) UI_ELEMENTS.userAvatarTop.src = avatar;
+        if (avatar && UI_ELEMENTS.userAvatarTop) UI_ELEMENTS.userAvatarTop.src = avatar;
     }
-};
+}
 
 async function apiRequest(endpoint, body) {
     try {
@@ -153,12 +152,12 @@ async function apiRequest(endpoint, body) {
             body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Something went wrong');
+        if (!res.ok) throw new Error(data.message || 'কিছু সমস্যা হয়েছে'); 
         return { ok: true, data };
     } catch (error) {
         return { ok: false, data: { message: error.message || 'সার্ভার ত্রুটি।' } };
     }
-};
+}
 
 function handleAuthSuccess(data) {
     localStorage.setItem('token', data.token);
@@ -168,21 +167,21 @@ function handleAuthSuccess(data) {
     localStorage.setItem('avatar', data.avatar);
     if (data.status) localStorage.setItem('status', data.status);
     authenticateSocket();
-};
+}
 
 if (UI_ELEMENTS.showRegister) UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
 if (UI_ELEMENTS.showLogin) UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
 
 if (UI_ELEMENTS.loginBtn) UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
     const body = { username: UI_ELEMENTS.loginUsername.value.trim(), password: UI_ELEMENTS.loginPassword.value.trim() };
-    if (!body.username || !body.password) return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error');
+    if (!body.username || !body.password) return showNotification('ইউজারনেম ও পাসওয়ার্ড দিন।', 'error'); 
     const { ok, data } = await apiRequest('/api/login', body);
     if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
 });
 
 if (UI_ELEMENTS.registerBtn) UI_ELEMENTS.registerBtn.addEventListener('click', async () => {
     const body = { username: UI_ELEMENTS.registerUsername.value.trim(), password: UI_ELEMENTS.registerPassword.value.trim() };
-    if (!body.username || !body.password) return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error');
+    if (!body.username || !body.password) return showNotification('ইউজারনেম ও পাসওয়ার্ড দিন।', 'error'); 
     const { ok, data } = await apiRequest('/api/register', body);
     if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
 });
@@ -196,7 +195,7 @@ if (UI_ELEMENTS.guestBtn) UI_ELEMENTS.guestBtn.addEventListener('click', () => {
 if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
     ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms', 'avatar', 'status'].forEach(key => localStorage.removeItem(key));
     socket.disconnect().connect();
-    showNotification('সফলভাবে লগআউট হয়েছে।');
+    showNotification('লগআউট সফল।'); 
     setUIState('login');
 });
 
@@ -205,23 +204,23 @@ if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.addEventListene
     localStorage.removeItem('userId'); 
     localStorage.removeItem('userType'); 
     setUIState('register'); 
-    showNotification('রেজিস্টার করার জন্য স্বাগত!', 'success');
+    showNotification('রেজিস্টার করুন।', 'success'); 
 });
 
 
 if (UI_ELEMENTS.clearChatBtn) UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
-    if (confirm('আপনি কি এই রুমের সব মেসেজ সবার জন্য স্থায়ীভাবে মুছে ফেলতে চান?')) {
+    if (confirm('রুমের সব মেসেজ মুছবেন?')) { 
         socket.emit('clear room chat', { roomCode: currentRoom });
     }
 });
 
 if (UI_ELEMENTS.userProfileInfo) UI_ELEMENTS.userProfileInfo.addEventListener('click', () => {
     UI_ELEMENTS.statusInput.value = localStorage.getItem('status') || '';
-    UI_ELEMENTS.profileModal.style.display = 'flex';
+    if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'flex';
 });
 
 if (UI_ELEMENTS.profileModalCloseBtn) UI_ELEMENTS.profileModalCloseBtn.addEventListener('click', () => {
-    UI_ELEMENTS.profileModal.style.display = 'none';
+    if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'none';
 });
 
 if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
@@ -230,29 +229,33 @@ if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click
         const { ok, data } = await apiRequest('/api/user/avatar', { avatar: newAvatar });
         if (ok) {
             localStorage.setItem('avatar', data.avatar);
-            UI_ELEMENTS.userAvatarTop.src = data.avatar;
-            showNotification('অ্যাভাটার সফলভাবে পরিবর্তিত হয়েছে!');
+            if (UI_ELEMENTS.userAvatarTop) UI_ELEMENTS.userAvatarTop.src = data.avatar;
+            showNotification('অ্যাভাটার পরিবর্তিত হয়েছে!'); 
         } else {
-            showNotification(`অ্যাভাটার পরিবর্তন করতে সমস্যা হয়েছে: ${data.message}`, 'error');
+            showNotification(`অ্যাভাটার পরিবর্তন সমস্যা: ${data.message}`, 'error'); 
         }
     }
 });
 
 if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
     const newStatus = UI_ELEMENTS.statusInput.value.trim();
-    if (!newStatus) return showNotification('স্ট্যাটাস খালি রাখা যাবে না।', 'error');
-    UI_ELEMENTS.saveStatusBtn.disabled = true;
-    UI_ELEMENTS.saveStatusBtn.textContent = 'সেভিং...';
+    if (!newStatus) return showNotification('স্ট্যাটাস খালি যাবে না।', 'error'); 
+    if (UI_ELEMENTS.saveStatusBtn) {
+        UI_ELEMENTS.saveStatusBtn.disabled = true;
+        UI_ELEMENTS.saveStatusBtn.textContent = 'সেভ হচ্ছে...'; 
+    }
     const { ok, data } = await apiRequest('/api/user/status', { status: newStatus });
     if (ok) {
         localStorage.setItem('status', data.status);
-        showNotification('স্ট্যাটাস সফলভাবে আপডেট হয়েছে!');
-        UI_ELEMENTS.profileModal.style.display = 'none';
+        showNotification('স্ট্যাটাস আপডেট সফল!'); 
+        if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'none';
     } else {
-        showNotification(`স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${data.message}`, 'error');
+        showNotification(`স্ট্যাটাস আপডেট সমস্যা: ${data.message}`, 'error'); 
     }
-    UI_ELEMENTS.saveStatusBtn.disabled = false;
-    UI_ELEMENTS.saveStatusBtn.textContent = 'স্ট্যাটাস সেভ করুন';
+    if (UI_ELEMENTS.saveStatusBtn) {
+        UI_ELEMENTS.saveStatusBtn.disabled = false;
+        UI_ELEMENTS.saveStatusBtn.textContent = 'সেভ করুন';
+    }
 });
 
 // displayMessage ফাংশন
@@ -270,10 +273,10 @@ function displayMessage(data) {
     }
 
     let buttonsHTML = '';
-    if (data.userId === currentUserId && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
-        buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="Edit">✏️</button><button class="delete-btn" title="Delete">🗑️</button></div>`;
+    if (data.userId === currentUserId && data.message !== 'মেসেজ মোছা হয়েছে।') { 
+        buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="সম্পাদনা">✏️</button><button class="delete-btn" title="মুছুন">🗑️</button></div>`; 
     }
-    const editedIndicator = data.isEdited && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' ? `<small class="edited-indicator">(edited)</small>` : '';
+    const editedIndicator = data.isEdited && data.message !== 'মেসেজ মোছা হয়েছে।' ? `<small class="edited-indicator">(সম্পাদিত)</small>` : ''; 
     const reactionsHTML = `<div class="message-reactions"></div>`;
     const reactionPaletteHTML = `<div class="reaction-palette" style="display: none;"><button class="reaction-choice" data-emoji="😄">😄</button><button class="reaction-choice" data-emoji="😐">😐</button><button class="reaction-choice" data-emoji="😢">😢</button></div>`;
     
@@ -292,13 +295,13 @@ function displayMessage(data) {
         ${buttonsHTML}
     `;
 
-    UI_ELEMENTS.messages.appendChild(item);
+    if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
     
     if (data.reactions && data.reactions.length > 0) {
         renderReactions(item, data.reactions);
     }
     
-    if (UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
+    if (UI_ELEMENTS.messages && UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
         UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
     }
 }
@@ -320,7 +323,23 @@ function joinRoom(roomName) {
     if (UI_ELEMENTS.roomsModal) {
         UI_ELEMENTS.roomsModal.style.display = 'none';
     }
-};
+
+    if (UI_ELEMENTS.privateCodeSection) {
+        UI_ELEMENTS.privateCodeSection.style.display = 'none';
+    }
+    if (UI_ELEMENTS.privateChatBtn) {
+        UI_ELEMENTS.privateChatBtn.classList.remove('active'); 
+    }
+    if (UI_ELEMENTS.publicChatBtn) {
+        UI_ELEMENTS.publicChatBtn.classList.remove('active'); 
+    }
+    
+    if (roomName === 'public' && UI_ELEMENTS.publicChatBtn) {
+        UI_ELEMENTS.publicChatBtn.classList.add('active');
+    } else if (roomName !== 'public' && UI_ELEMENTS.privateChatBtn) { 
+        UI_ELEMENTS.privateChatBtn.classList.add('active');
+    }
+}
 
 function addRoomToSavedList(roomCode) {
     let savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
@@ -329,7 +348,7 @@ function addRoomToSavedList(roomCode) {
         localStorage.setItem('savedRooms', JSON.stringify(savedRooms));
         renderSavedRooms();
     }
-};
+}
 
 function renderSavedRooms() {
     const savedRooms = JSON.parse(localStorage.getItem('savedRooms') || '[]');
@@ -337,12 +356,12 @@ function renderSavedRooms() {
         UI_ELEMENTS.savedRoomsList.innerHTML = '';
         ['public', ...savedRooms.filter(r => r !== 'public')].forEach(room => {
             const li = document.createElement('li');
-            li.textContent = room === 'public' ? 'পাবলিক চ্যাট' : room;
+            li.textContent = room === 'public' ? 'পাবলিক' : room; // সংক্ষেপে টেক্সট
             li.addEventListener('click', () => joinRoom(room));
             UI_ELEMENTS.savedRoomsList.appendChild(li);
         });
     }
-};
+}
 
 function authenticateSocket(guestId = null) {
     socket.emit('authenticate', { token: localStorage.getItem('token'), guestId }, (res) => {
@@ -358,11 +377,11 @@ function authenticateSocket(guestId = null) {
             joinRoom(savedRoom);
             renderSavedRooms();
         } else {
-            showNotification(res.message || 'সেশন মেয়াদোত্তীর্ণ হয়েছে।', 'error');
+            showNotification(res.message || 'সেশন মেয়াদোত্তীর্ণ।', 'error'); 
             setUIState('login');
         }
     });
-};
+}
 
 window.addEventListener('load', () => {
     const token = localStorage.getItem('token'), userId = localStorage.getItem('userId'), userType = localStorage.getItem('userType');
@@ -370,7 +389,6 @@ window.addEventListener('load', () => {
     else if (userId && userType === 'guest') authenticateSocket(userId);
     else setUIState('login');
 
-    // অনলাইন ব্যবহারকারীদের তালিকায় ক্লিক ইভেন্ট লিসেনার যোগ করা (একবারই যোগ হবে)
     if (UI_ELEMENTS.onlineUsersList) {
         UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
             const targetUserElement = e.target.closest('.online-user');
@@ -379,12 +397,12 @@ window.addEventListener('load', () => {
                 if (typeof userId === 'string' && (userId.length === 24 || userId.startsWith('guest-'))) {
                     showUserProfile(userId);
                 } else {
-                    console.warn('Invalid userId found in data-user-id:', userId);
+                    console.warn('ভুল ইউজার আইডি:', userId); 
                 }
             }
         });
     } else {
-        console.error("UI_ELEMENTS.onlineUsersList not found. Profile view click handler not attached.");
+        console.error("ইউজার লিস্ট পাওয়া যায়নি।"); 
     }
 });
 
@@ -403,22 +421,22 @@ if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('cli
 
 if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
-    if (!privateCode) return showNotification('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!', 'error');
+    if (!privateCode) return showNotification('প্রাইভেট কোড লিখুন!', 'error'); 
     socket.emit('check room existence', privateCode, (exists) => {
         if (exists) joinRoom(privateCode);
-        else showNotification('এই রুমটি বিদ্যমান নেই। একটি নতুন রুম তৈরি করুন।', 'error');
+        else showNotification('রুমটি নেই। নতুন তৈরি করুন।', 'error'); 
     });
 });
 
 if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
-    if (!privateCode) return showNotification('অনুগ্রহ করে একটি প্রাইভেট কোড লিখুন!', 'error');
+    if (!privateCode) return showNotification('প্রাইভেট কোড লিখুন!', 'error'); 
     socket.emit('create private room', privateCode, username, (response) => {
         if (response.success) {
             joinRoom(privateCode);
             showNotification(response.message);
         } else {
-            showNotification(response.message || 'রুম তৈরি করতে সমস্যা হয়েছে।', 'error');
+            showNotification(response.message || 'রুম তৈরি সমস্যা।', 'error'); 
         }
     });
 });
@@ -432,7 +450,7 @@ if (UI_ELEMENTS.form) UI_ELEMENTS.form.addEventListener('submit', (e) => {
             room: currentRoom,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
-        UI_ELEMENTS.input.value = '';
+        if (UI_ELEMENTS.input) UI_ELEMENTS.input.value = '';
     }
 });
 
@@ -480,7 +498,7 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
         UI_ELEMENTS.deleteConfirmationModal.style.display = 'flex'; 
     } else if (e.target.classList.contains('edit-btn')) {
         const textElem = messageLi.querySelector('.message-text');
-        const newText = prompt('মেসেজ এডিট করুন:', textElem.textContent);
+        const newText = prompt('মেসেজ সম্পাদনা করুন:', textElem.textContent); 
         if (newText && newText.trim() !== '' && newText !== textElem.textContent) {
             socket.emit('edit message', { messageId, newMessageText: newText });
         }
@@ -493,7 +511,7 @@ if (UI_ELEMENTS.deleteModalCloseButton) {
         if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
     });
 } else {
-    console.warn("Delete modal close button not found. Functionality may be impaired.");
+    console.warn("মুছুন মোডাল বন্ধ বাটন পাওয়া যায়নি।"); 
 }
 
 if (UI_ELEMENTS.cancelDeleteBtn) {
@@ -501,7 +519,7 @@ if (UI_ELEMENTS.cancelDeleteBtn) {
         if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
     });
 } else {
-    console.warn("Delete modal cancel button not found. Functionality may be impaired.");
+    console.warn("মুছুন মোডাল বাতিল বাটন পাওয়া যায়নি।"); 
 }
 
 if (UI_ELEMENTS.confirmDeleteBtn) {
@@ -513,14 +531,14 @@ if (UI_ELEMENTS.confirmDeleteBtn) {
         }
     });
 } else {
-    console.warn("Delete modal confirm button not found. Functionality may be impaired.");
+    console.warn("মুছুন মোডাল নিশ্চিত বাটন পাওয়া যায়নি।"); 
 }
 
 
 async function showUserProfile(userId) {
     if (!userId) return;
     if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'flex';
-    if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...';
+    if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...'; 
     if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = '';
     try {
         const response = await fetch(`/api/user/${userId}`);
@@ -530,11 +548,11 @@ async function showUserProfile(userId) {
             if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = user.username;
             if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = user.status;
         } else {
-            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার পাওয়া যায়নি';
+            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার নেই।'; 
         }
     } catch (error) {
-        if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি';
-        console.error('Error fetching user profile:', error); 
+        if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি!'; 
+        console.error('প্রোফাইল লোড সমস্যা:', error); 
     }
 }
 
@@ -543,7 +561,7 @@ if (UI_ELEMENTS.input) UI_ELEMENTS.input.addEventListener('input', () => socket.
 
 socket.on('user typing', ({ username: typingUsername }) => {
     if (typingUsername !== username && UI_ELEMENTS.typingIndicator) {
-        UI_ELEMENTS.typingIndicator.textContent = `${typingUsername} is typing...`;
+        UI_ELEMENTS.typingIndicator.textContent = `${typingUsername} লিখছে...`; 
         clearTimeout(typingIndicatorTimer);
         typingIndicatorTimer = setTimeout(() => { UI_ELEMENTS.typingIndicator.textContent = ''; }, 3000);
     }
@@ -564,7 +582,7 @@ socket.on('online users list', (users) => {
     }
     
     if (UI_ELEMENTS.onlineUsersCountDisplay) {
-        UI_ELEMENTS.onlineUsersCountDisplay.textContent = `${uniqueUsers.length} অনলাইন`;
+        UI_ELEMENTS.onlineUsersCountDisplay.textContent = `${uniqueUsers.length} অনলাইন`; 
     }
 });
 
@@ -591,13 +609,13 @@ socket.on('message edited', ({ messageId, newMessageText }) => {
     if (msgLi) {
         const textElem = msgLi.querySelector('.message-text');
         if (textElem) textElem.textContent = newMessageText;
-        if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
-            msgLi.querySelector('.message-actions')?.remove();
+        if (newMessageText === 'মেসেজ মোছা হয়েছে।') { 
+            if (msgLi.querySelector('.message-actions')) msgLi.querySelector('.message-actions').remove();
         }
         if (!msgLi.querySelector('.edited-indicator') && textElem) {
             const indicator = document.createElement('small');
             indicator.className = 'edited-indicator';
-            indicator.textContent = ' (edited)';
+            indicator.textContent = ' (সম্পাদিত)'; 
             textElem.insertAdjacentElement('afterend', indicator);
         }
     }
@@ -608,8 +626,8 @@ socket.on('chat cleared', () => {
         UI_ELEMENTS.messages.innerHTML = '';
         const item = document.createElement('li');
         item.classList.add('system-message');
-        item.innerHTML = `<i>এই রুমের চ্যাট পরিষ্কার করা হয়েছে।</i>`;
-        UI_ELEMENTS.messages.appendChild(item);
+        item.innerHTML = `<i>চ্যাট পরিষ্কার করা হলো।</i>`; 
+        if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
     }
 });
 

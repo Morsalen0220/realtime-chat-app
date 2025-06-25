@@ -913,22 +913,28 @@ body {
         min-width: 80px; /* খুব ছোট স্ক্রিনে ইনপুটের সর্বনিম্ন প্রস্থ */
     }
     #emoji-btn, #form > button {
-        width: auto;
-        padding: 8px 10px;
-        font-size: 1em;
+        width: auto; /* বাটনগুলোর প্রস্থ অটো */
+        padding: 8px 10px; /* প্যাডিং কমানো হলো */
+        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row; /* সারি বরাবর থাকবে */
+        flex-wrap: wrap; /* প্রয়োজনে র‍্যাপ করবে */
+        justify-content: center; /* সেন্টারে */
+        gap: 8px; /* গ্যাপ */
     }
     #room-selection-buttons .room-btn, #private-code-section button, #private-code-section input {
-        width: 100%;
-    }
-    #private-code-section button:not(:last-child) {
-        margin-bottom: 10px;
+        width: calc(50% - 4px); /* দুটি বাটন/ইনপুট পাশাপাশি */
+        margin-bottom: 0; /* মার্জিন বাতিল */
+        font-size: 0.85em; /* ফন্ট সাইজ আরও ছোট */
+        padding: 8px 10px; /* প্যাডিং অ্যাডজাস্ট */
     }
     #private-code-section input {
-        margin-bottom: 10px;
+        width: calc(100% - 8px); /* ইনপুট ফিল্ড পুরোটা নেবে */
+        margin-bottom: 8px; /* ইনপুটের নিচে মার্জিন */
+    }
+    #private-code-section button:not(:last-child) {
+        margin-bottom: 0;
     }
 }
