@@ -272,6 +272,19 @@ function displayMessage(data) {
         item.classList.add('theirs'); 
     }
 
+    // ডেলিভারি/রিড রসিদ আইকন
+    let statusIconHTML = '';
+    // শুধুমাত্র নিজের পাঠানো মেসেজের জন্য স্ট্যাটাস দেখাও
+    if (data.userId === currentUserId) { 
+        if (data.status === 'sent') {
+            statusIconHTML = '<i class="fas fa-check" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Sent"></i>'; // সেন্ড (ধূসর)
+        } else if (data.status === 'delivered') {
+            statusIconHTML = '<i class="fas fa-check-double" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Delivered"></i>'; // ডেলিভার্ড (ধূসর)
+        } else if (data.status === 'read') {
+            statusIconHTML = '<i class="fas fa-check-double" style="color:#3b82f6; font-size:0.75em; margin-left:5px;" title="Read"></i>'; // রিড (নীল)
+        }
+    }
+
     let buttonsHTML = '';
     if (data.userId === currentUserId && data.message !== 'মেসেজ মোছা হয়েছে।') { 
         buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="সম্পাদনা">✏️</button><button class="delete-btn" title="মুছুন">🗑️</button></div>`; 
@@ -290,13 +303,33 @@ function displayMessage(data) {
             </div>
             ${reactionsHTML}
             ${reactionPaletteHTML}
-            <small class="timestamp">${data.timestamp}</small>
+            <small class="timestamp">
+                ${data.timestamp}
+                ${statusIconHTML} <!-- স্ট্যাটাস আইকন যোগ করা হয়েছে -->
+            </small>
         </div>
         ${buttonsHTML}
     `;
 
     if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
     
+    // মেসেজ যখন যুক্ত হয়, তখন IntersectionObserver সেট করা
+    // যদি এটি আমাদের মেসেজ না হয় এবং এখনও পড়া না হয়ে থাকে
+    if (data.userId !== currentUserId && data.status !== 'read') { 
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) { // যখন মেসেজটি ভিউপোর্টে আসে
+                    // নিশ্চিত করুন যে socket অবজেক্ট উপলব্ধ আছে
+                    if (socket && socket.emit) {
+                        socket.emit('message read', { messageId: data._id, room: currentRoom });
+                    }
+                    observer.disconnect(); // একবার পড়া হলে অবজার্ভার ডিসকানেক্ট করো
+                }
+            });
+        }, { threshold: 0.8 }); // মেসেজের 80% দেখা গেলে ট্রিগার হবে
+        observer.observe(item);
+    }
+
     if (data.reactions && data.reactions.length > 0) {
         renderReactions(item, data.reactions);
     }
@@ -356,7 +389,7 @@ function renderSavedRooms() {
         UI_ELEMENTS.savedRoomsList.innerHTML = '';
         ['public', ...savedRooms.filter(r => r !== 'public')].forEach(room => {
             const li = document.createElement('li');
-            li.textContent = room === 'public' ? 'পাবলিক' : room; // সংক্ষেপে টেক্সট
+            li.textContent = room === 'public' ? 'পাবলিক' : room; 
             li.addEventListener('click', () => joinRoom(room));
             UI_ELEMENTS.savedRoomsList.appendChild(li);
         });
@@ -464,7 +497,7 @@ function renderReactions(messageElement, reactions) {
         return acc;
     }, {});
     for (const emoji in groupedReactions) {
-        const count = groupedReactions[emoji];
+        const count = groupedReactions[emoji]; 
         const reactionBtn = document.createElement('button');
         reactionBtn.className = 'reaction-display';
         reactionBtn.textContent = `${emoji} ${count}`;
@@ -630,6 +663,51 @@ socket.on('chat cleared', () => {
         if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
     }
 });
+
+// socket.on('message status updated') ফাংশন - ইনলাইন স্টাইল সহ
+socket.on('message status updated', ({ messageId, status }) => {
+    console.log(`[ক্লায়েন্ট] মেসেজ স্ট্যাটাস আপডেট ইভেন্ট পাওয়া গেছে (ID: ${messageId}, স্ট্যাটাস: ${status})`); 
+
+    const messageLi = document.querySelector(`li[data-message-id="${messageId}"]`);
+    if (messageLi) {
+        const timestampSpan = messageLi.querySelector('.timestamp');
+        if (timestampSpan) {
+            let iconClass = '';
+            let iconColor = '';
+            let iconTitle = '';
+
+            if (status === 'sent') {
+                iconClass = 'fas fa-check';
+                iconColor = '#6b7280'; // ধূসর
+                iconTitle = 'Sent';
+            } else if (status === 'delivered') {
+                iconClass = 'fas fa-check-double';
+                iconColor = '#6b7280'; // ধূসর
+                iconTitle = 'Delivered';
+            } else if (status === 'read') {
+                iconClass = 'fas fa-check-double';
+                iconColor = '#3b82f6'; // নীল
+                iconTitle = 'Read';
+            }
+            
+            const newIconHTML = `<i class="${iconClass}" style="color:${iconColor}; font-size:0.75em; margin-left:5px;" title="${iconTitle}"></i>`;
+            
+            const existingIcon = timestampSpan.querySelector('.fas');
+            if (existingIcon) {
+                // বিদ্যমান আইকনের ক্লাস এবং স্টাইল পরিবর্তন করো
+                existingIcon.className = iconClass;
+                existingIcon.style.color = iconColor;
+                existingIcon.style.fontSize = '0.75em';
+                existingIcon.style.marginLeft = '5px';
+                existingIcon.title = iconTitle;
+            } else {
+                // যদি কোনো কারণে আইকন না থাকে, তবে নতুন আইকন HTML যোগ করো
+                timestampSpan.innerHTML += newIconHTML;
+            }
+        }
+    }
+});
+
 
 socket.on('avatar updated', ({ userId, avatar }) => {
     document.querySelectorAll(`img.chat-avatar[data-user-id="${userId}"]`).forEach(img => {

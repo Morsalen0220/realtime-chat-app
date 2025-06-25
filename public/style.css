@@ -303,11 +303,8 @@ body {
     flex-grow: 1; /* উপলব্ধ স্থানের বেশিরভাগ দখল করবে */
     overflow-y: auto; /* প্রয়োজনে উল্লম্বভাবে স্ক্রল করবে */
     background-color: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-    /* নতুন: উচ্চতা ব্যবস্থাপনার জন্য */
-    flex-basis: 0; /* flex-grow এর সাথে ব্যবহার করা হয় */
-    min-height: 0; /* overflow: auto; ঠিকভাবে কাজ করার জন্য */
+    display: flex; /* নতুন: মেসেজগুলো ফ্লেক্স কন্টেইনারে থাকবে */
+    flex-direction: column; /* নতুন: মেসেজগুলো কলাম বরাবর সাজানো হবে */
 }
 
 /* মেসেজ কন্টেইনারের জন্য বেসিক স্টাইল */
@@ -469,7 +466,7 @@ body {
 .modal {
     display: none;
     position: fixed;
-    z-index: 2000;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
@@ -489,7 +486,6 @@ body {
     word-wrap: break-word;
     /* মোডালের জন্য শ্যাডো পরিবর্তন করা হয়েছে */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* হালকা শ্যাডো */
-	 z-index: 2001;
 }
 .close-button {
     color: #aaa;
@@ -914,9 +910,9 @@ body {
         min-width: 80px; /* খুব ছোট স্ক্রিনে ইনপুটের সর্বনিম্ন প্রস্থ */
     }
     #emoji-btn, #form > button {
-        width: auto; /* বাটনগুলোর প্রস্থ অটো */
-        padding: 8px 10px; /* প্যাডিং কমানো হলো */
-        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
+        width: auto;
+        padding: 8px 10px;
+        font-size: 1em;
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {

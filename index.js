@@ -34,7 +34,8 @@ const messageSchema = new mongoose.Schema({
     }],
     isGuest: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+	status: { type: String, default: 'sent' } // 'sent', 'delivered', 'read'
 });
 const Message = mongoose.model('Message', messageSchema);
 
@@ -272,7 +273,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('chat message', async (data) => {
+socket.on('chat message', async (data) => {
         if (!socket.userId) return;
         const { message, timestamp, room } = data;
         try {
@@ -282,16 +283,33 @@ io.on('connection', (socket) => {
                 timestamp,
                 room,
                 userId: socket.userId,
-                avatar: socket.avatar, // এখান থেকে সকেটের বর্তমান অ্যাভাটার নেওয়া হবে
-                isGuest: socket.userId.startsWith('guest-')
+                avatar: socket.avatar,
+                isGuest: socket.userId.startsWith('guest-'),
+                status: 'sent' // ডিফল্ট স্ট্যাটাস 'sent'
             });
             await newMessage.save();
-            io.to(room).emit('chat message', newMessage.toObject());
+            console.log(`[সার্ভার] মেসেজ সেভ হয়েছে (ID: ${newMessage._id}, স্ট্যাটাস: ${newMessage.status})`); // DEBUG LOG 1
+
+            const messageToSend = newMessage.toObject();
+            io.to(room).emit('chat message', messageToSend);
+            console.log(`[সার্ভার] মেসেজ ইমিট হয়েছে (ID: ${newMessage._id})`); // DEBUG LOG 2
+
+            // ইমিট করার পর স্ট্যাটাস 'delivered' এ আপডেট করা
+            newMessage.status = 'delivered';
+            await newMessage.save();
+            console.log(`[সার্ভার] মেসেজ স্ট্যাটাস আপডেট হয়েছে 'delivered' (ID: ${newMessage._id})`); // DEBUG LOG 3
+
+            // যদি স্ট্যাটাস আপডেট হয়, তবে ক্লায়েন্টদের জানানো
+            io.to(room).emit('message status updated', {
+                messageId: newMessage._id,
+                status: 'delivered'
+            });
+            console.log(`[সার্ভার] 'delivered' স্ট্যাটাস ইমিট হয়েছে (ID: ${newMessage._id})`); // DEBUG LOG 4
+
         } catch (err) {
             console.error('Error saving message:', err);
         }
     });
-
     // রুম বিদ্যমান কিনা চেক করার জন্য
     socket.on('check room existence', async (roomCode, callback) => {
         try {
@@ -329,6 +347,24 @@ io.on('connection', (socket) => {
         } catch (error) {
             console.error('Error creating private room:', error);
             callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
+        }
+    });
+	   socket.on('message read', async ({ messageId, room }) => {
+        console.log(`[সার্ভার] 'message read' ইভেন্ট পাওয়া গেছে (ID: ${messageId})`); // DEBUG LOG 5
+        try {
+            const message = await Message.findById(messageId);
+            if (message && message.status !== 'read') { // যদি এখনও পড়া না হয়ে থাকে
+                message.status = 'read';
+                await message.save();
+                console.log(`[সার্ভার] মেসেজ স্ট্যাটাস আপডেট হয়েছে 'read' (ID: ${message._id})`); // DEBUG LOG 6
+                io.to(room).emit('message status updated', {
+                    messageId: message._id,
+                    status: 'read'
+                });
+                console.log(`[সার্ভার] 'read' স্ট্যাটাস ইমিট হয়েছে (ID: ${message._id})`); // DEBUG LOG 7
+            }
+        } catch (err) {
+            console.error('Error updating message read status:', err);
         }
     });
 
