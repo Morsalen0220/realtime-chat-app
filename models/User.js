@@ -14,14 +14,19 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 6 // সর্বনিম্ন 6 অক্ষর
     },
-	avatar: {
+    avatar: {
         type: String,
         default: 'avatars/avatar1.png' // ডিফল্ট অ্যাভাটার
     },
-	status: {
+    status: {
         type: String,
         default: 'Hey there! I am using this chat app.',
         maxlength: 150
+    },
+    role: { // নতুন: রোলের ফিল্ড যোগ করা হয়েছে
+        type: String,
+        enum: ['user', 'moderator', 'admin'], // সম্ভাব্য রোলগুলো
+        default: 'user'
     },
     createdAt: {
         type: Date,

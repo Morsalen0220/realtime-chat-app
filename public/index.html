@@ -8,9 +8,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/emoji-button@latest/dist/index.min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome CDN যোগ করা হয়েছে Send আইকনের জন্য -->
-	 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 <div id="notification-container"></div>
@@ -27,8 +24,6 @@
                 <div id="register-form" style="display:none;">
                     <input type="text" id="registerUsername" placeholder="ইউজারনেম" autocomplete="off" />
                     <input type="password" id="registerPassword" placeholder="পাসওয়ার্ড" autocomplete="off" />
-                    <!-- DOB ফিল্ড যোগ করার জন্য, যদি প্রয়োজন হয় -->
-                    <!-- <input type="date" id="registerDob" placeholder="জন্মতারিখ" /> -->
                     <button id="registerBtn">রেজিস্টার</button>
                     <p>ইতিমধ্যে একাউন্ট আছে? <a href="#" id="showLogin">লগইন করুন</a></p>
                 </div>
@@ -37,7 +32,6 @@
         </div>
 
         <div id="main-chat-content" style="display: none;">
-            <!-- menu-overlay সাইডবারের সাথে কাজ করে, main-chat-content এর direct child হিসেবে থাকবে -->
             <div id="menu-overlay"></div> 
 
             <div id="sidebar">
@@ -46,7 +40,6 @@
             </div>
             <div id="chat-area">
                 <div id="top-bar">
-                    <!-- HAMBURGER MENU MOVED INSIDE TOP-BAR -->
                     <button id="hamburger-menu" class="top-bar-btn">☰</button>
                     <span id="currentRoomDisplayTop"></span>
                     <span id="onlineUsersCountDisplay" class="top-bar-btn" style="display: none; cursor: pointer;"></span>
@@ -55,32 +48,29 @@
                         <span id="loggedInUserInfo"></span>
                         <img id="user-avatar-top" src="avatars/avatar1.png" alt="My Avatar">
                     </div>
-                    <button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">ইউজার হন</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <button id="registerAsUserBtn" class="top-bar-btn" style="display: none;">ইউজার হন</button>
                     <button id="clearChatBtn" class="top-bar-btn" title="চ্যাট মুছুন">🗑️</button>
                     <button id="logoutBtn" class="top-bar-btn" style="display: none;">লগআউট</button>
                 </div>
                 <div id="room-selection-buttons">
-                    <button id="publicChatBtn" class="room-btn active">পাবলিক</button> <!-- সংক্ষিপ্ত টেক্সট -->
-                    <button id="privateChatBtn" class="room-btn">প্রাইভেট</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <button id="publicChatBtn" class="room-btn active">পাবলিক</button>
+                    <button id="privateChatBtn" class="room-btn">প্রাইভেট</button>
                 </div>
                 <div id="private-code-section" style="display: none;">
-                    <input type="text" id="roomCodeInput" placeholder="প্রাইভেট কোড" autocomplete="off" /> <!-- সংক্ষিপ্ত টেক্সট -->
-                    <button id="joinPrivateRoomBtn">প্রবেশ</button> <!-- সংক্ষিপ্ত টেক্সট -->
-                    <button id="createPrivateRoomBtn">তৈরি</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                    <input type="text" id="roomCodeInput" placeholder="প্রাইভেট কোড" autocomplete="off" />
+                    <button id="joinPrivateRoomBtn">প্রবেশ</button>
+                    <button id="createPrivateRoomBtn">তৈরি</button>
                 </div>
                 <ul id="messages"></ul>
                 <div id="typing-indicator"></div>
                 <form id="form" action="">
                     <button type="button" id="emoji-btn">😀</button>
-                    <!-- নতুন ইফেমিরাল টগল বাটন -->
                     <button type="button" id="ephemeralToggleBtn" title="স্বয়ংক্রিয়ভাবে মুছে যাওয়া মেসেজ">
-                        <i class="fas fa-hourglass-half"></i> <!-- ঘড়ির আইকন -->
+                        <i class="fas fa-hourglass-half"></i>
                     </button>
                     <input id="input" autocomplete="off" placeholder="মেসেজ লিখুন..." />
-                    <!-- "প্রেরণ করুন" বাটনের জায়গায় Font Awesome আইকন ব্যবহার করা হয়েছে -->
                     <button type="submit"><i class="fas fa-paper-plane"></i></button>
                 </form>
-                <!-- ইনফিনিট স্ক্রলিং লোডার -->
                 <div id="messages-loader" style="display: none; text-align: center; padding: 10px; color: #888;">লোড হচ্ছে...</div>
             </div>
         </div>
@@ -89,7 +79,7 @@
     <div id="rooms-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>সংরক্ষিত রুম</h2> <!-- সংক্ষিপ্ত টেক্সট -->
+            <h2>সংরক্ষিত রুম</h2>
             <ul id="saved-rooms-list"></ul>
         </div>
     </div>
@@ -97,23 +87,22 @@
     <div id="profile-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>প্রোফাইল</h2> <!-- সংক্ষিপ্ত টেক্সট -->
+            <h2>প্রোফাইল</h2>
             <div id="avatar-selection">
-                <p>আপনার অ্যাভাটার:</p> <!-- সংক্ষিপ্ত টেক্সট -->
+                <p>আপনার অ্যাভাটার:</p>
                 <div class="avatar-options">
                     <img src="avatars/avatar1.png" class="avatar-choice" data-avatar="avatars/avatar1.png" alt="Avatar 1">
                     <img src="avatars/avatar2.png" class="avatar-choice" data-avatar="avatars/avatar2.png" alt="Avatar 2">
                     <img src="avatars/avatar3.png" class="avatar-choice" data-avatar="avatars/avatar3.png" alt="Avatar 3">
-                    <img src="avatars/avatar4.png" class="avatar-choice"  data-avatar="avatars/avatar4.png" alt="Avatar 4">
+                    <img src="avatars/avatar4.png" class="avatar-choice" data-avatar="avatars/avatar4.png" alt="Avatar 4">
                 </div>
             </div>
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
             <div id="status-update-section">
-                <p>আপনার স্ট্যাটাস:</p> <!-- সংক্ষিপ্ত টেক্সট -->
-                <textarea id="status-input" rows="3" maxlength="150" placeholder="স্ট্যাটাস লিখুন..."></textarea> <!-- সংক্ষিপ্ত টেক্সট -->
-                <button id="save-status-btn">সেভ করুন</button> <!-- সংক্ষিপ্ত টেক্সট -->
+                <p>আপনার স্ট্যাটাস:</p>
+                <textarea id="status-input" rows="3" maxlength="150" placeholder="স্ট্যাটাস লিখুন..."></textarea>
+                <button id="save-status-btn">সেভ করুন</button>
             </div>
-            <!-- থিম টoggle যোগ করা হয়েছে -->
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
             <div id="theme-selection-section" style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
                 <p style="margin: 0;">থিম পরিবর্তন করুন:</p>
@@ -133,7 +122,7 @@
         <div id="profile-details">
             <img id="profile-view-avatar" src="avatars/avatar1.png" alt="User Avatar">
             <h2 id="profile-view-username">ইউজারনেম</h2>
-            <p id="profile-view-status">স্ট্যাটাস এখানে...</p> <!-- সংক্ষিপ্ত টেক্সট -->
+            <p id="profile-view-status">স্ট্যাটাস এখানে...</p>
         </div>
     </div>
 </div>
@@ -148,7 +137,6 @@
             </div>
         </div>
     </div>
-    <!-- নতুন: স্বয়ংক্রিয়ভাবে মুছে যাওয়া মেসেজ মোডাল -->
     <div id="ephemeral-duration-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="ephemeralModalCloseButton">&times;</span>

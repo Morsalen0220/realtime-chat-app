@@ -4,12 +4,12 @@
 
 /* গ্লোবাল বক্স মডেল রিসেট */
 * {
-    box-sizing: border-box; /* সমস্ত উপাদানের জন্য বক্স সাইজিং বর্ডার-বক্স সেট করা হয়েছে */
+    box-sizing: border-box;
 }
 
 /* HTML এবং Body এর জন্য ফুল হাইট নিশ্চিত করা */
 html, body {
-    height: 100%; /* HTML এবং BODY এর উচ্চতা সম্পূর্ণ ভিউপোর্ট হবে */
+    height: 100%;
     margin: 0;
     padding: 0;
 }
@@ -20,19 +20,18 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* min-height: 100vh; এটি সরিয়ে শুধু height: 100%; ব্যবহার করা হয়েছে */
-    overflow: hidden; /* পুরো পেজের ওভারফ্লো যেন না হয় */
-    transition: background-color 0.3s ease; /* থিম পরিবর্তনের জন্য মসৃণ ট্রানজিশন */
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
 /* ডার্ক থিম স্টাইল */
 body.dark-theme {
-    background-color: #1a202c; /* গাঢ় ব্যাকগ্রাউন্ড */
-    color: #e2e8f0; /* হালকা টেক্সট */
+    background-color: #1a202c;
+    color: #e2e8f0;
 }
 
 body.dark-theme #chat-container {
-    background-color: #2d3748; /* গাঢ় কন্টেইনার */
+    background-color: #2d3748;
     box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4),
                 -10px -10px 20px rgba(74, 85, 104, 0.6);
 }
@@ -86,7 +85,7 @@ body.dark-theme #chat-area {
 }
 
 body.dark-theme #top-bar {
-    background-color: #4299e1; /* একটু ভিন্ন নীল */
+    background-color: #4299e1;
     border-bottom-color: #3182ce;
 }
 
@@ -163,7 +162,7 @@ body.dark-theme #form > button:hover {
     box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(74, 85, 104, 0.8);
 }
 body.dark-theme #ephemeralToggleBtn {
-    background-color: #a0aec0; /* ডিফল্ট ধূসর রঙ */
+    background-color: #a0aec0;
     color: #1a202c;
     box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), -3px -3px 6px rgba(74, 85, 104, 0.6);
 }
@@ -172,8 +171,8 @@ body.dark-theme #ephemeralToggleBtn:hover {
     box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(74, 85, 104, 0.8);
 }
 body.dark-theme #ephemeralToggleBtn.active {
-    background-color: #ecc94b; /* সক্রিয় হলে হলুদ রঙ (বা তোমার পছন্দসই রঙ) */
-    color: #2d3748; /* সক্রিয় অবস্থায় টেক্সটের রঙ */
+    background-color: #ecc94b;
+    color: #2d3748;
     box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(74, 85, 104,0.4);
 }
 body.dark-theme #ephemeralToggleBtn.active:hover {
@@ -253,7 +252,7 @@ body.dark-theme .notification.error {
     border-color: rgba(244, 67, 54, 0.7);
 }
 body.dark-theme .notification.info {
-    background-color: rgba(66, 153, 225, 0.9); /* হালকা নীল/সাদা */
+    background-color: rgba(66, 153, 225, 0.9);
     border-color: rgba(66, 153, 225, 0.7);
 }
 
@@ -292,11 +291,10 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
                 -10px -10px 20px rgba(255, 255, 255, 0.8);
     width: 95%;
     max-width: 900px;
-    /* এখানে height: 100% ব্যবহার করা হয়েছে, 90vh নয় */
-    height: 100%; /* প্যারেন্ট বডির 100% উচ্চতা নেবে */
+    height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* কন্টেইনারের ভিতরের কন্টেন্ট যেন ওভারফ্লো না হয় */
+    overflow: hidden;
 }
 
 /* Auth Overlay এবং Box স্টাইল */
@@ -392,21 +390,20 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     flex-grow: 1;
     overflow: hidden;
     position: relative;
-    /* নতুন: উচ্চতা নিশ্চিত করা */
-    height: 100%; /* প্যারেন্ট #chat-container এর 100% উচ্চতা নেবে */
+    height: 100%;
 }
 
 /* Sidebar এবং Online Users List - মোবাইল পপ-আপের জন্য */
 #sidebar {
-    width: 250px; /* সাইডবারের প্রস্থ একটু বাড়ানো হলো */
+    width: 250px;
     border-right: 1px solid #ddd;
     background-color: #f8f9fa;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    position: relative; /* ডেস্কটপে স্বাভাবিক অবস্থানে থাকবে */
-    transition: transform 0.3s ease-in-out; /* মসৃণ ট্রানজিশনের জন্য */
-    z-index: 999; /* মেনু ওভারলের নিচে */
+    position: relative;
+    transition: transform 0.3s ease-in-out;
+    z-index: 999;
 }
 
 #sidebar h3 {
@@ -434,7 +431,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     border-radius: 5px;
     margin-bottom: 5px;
     transition: background-color 0.2s;
-    font-size: 0.95em; /* অনলাইন ইউজারের নামের ফন্ট সাইজ */
+    font-size: 0.95em;
 }
 
 .online-user:hover { background-color: #e9ecef; }
@@ -445,7 +442,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     background-color: #28a745;
     border-radius: 50%;
     margin-right: 10px;
-    flex-shrink: 0; /* যেন ছোট না হয় */
+    flex-shrink: 0;
 }
 
 .online-user-avatar {
@@ -457,14 +454,51 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     flex-shrink: 0;
 }
 
+/* অনলাইন ইউজারের পাশে কিক বাটনের জন্য স্টাইল */
+.online-user .kick-user-btn {
+    background-color: #dc3545; /* লাল রঙ */
+    color: white;
+    border: none;
+    padding: 3px 8px; /* ছোট প্যাডিং */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.75em; /* ছোট ফন্ট */
+    margin-left: auto; /* ডানদিকে সরানোর জন্য */
+    opacity: 0.8;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    flex-shrink: 0; /* যেন ছোট না হয় */
+}
+
+.online-user .kick-user-btn:hover {
+    opacity: 1;
+    background-color: #c82333;
+}
+
+/* ডার্ক থিম সাপোর্টের জন্য */
+body.dark-theme .online-user .kick-user-btn {
+    background-color: #e53e3e;
+    color: white;
+}
+
+body.dark-theme .online-user .kick-user-btn:hover {
+    background-color: #c53030;
+}
+
+/* যখন কিক বাটন দেখানো হবে, তখন ইউজারনেম যাতে ওভারফ্লো না হয় */
+.online-user .online-username-text {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 #chat-area {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0; /* flex আইটেমের জন্য প্রয়োজনীয় */
-    /* নতুন: উচ্চতা নিশ্চিত করা */
-    height: 100%; /* প্যারেন্ট #main-chat-content এর 100% উচ্চতা নেবে */
+    min-width: 0;
+    height: 100%;
 }
 
 #top-bar {
@@ -477,7 +511,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     font-weight: 500;
     font-size: 1.1em;
     border-bottom: 1px solid #0056b3;
-    flex-shrink: 0; /* এটি যেন ছোট না হয় */
+    flex-shrink: 0;
     gap: 10px;
 }
 
@@ -496,24 +530,24 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
 
 /* হ্যামবার্গার মেনু শুধুমাত্র মোবাইলে দেখানোর জন্য */
 #hamburger-menu {
-    display: none; /* ডিফল্টভাবে লুকানো */
+    display: none;
     padding: 5px 10px;
     font-size: 1.5em;
 }
 
 /* মেনু ওভারলে - সাইডবার পপ-আপের জন্য */
 #menu-overlay {
-    display: none; /* ডিফল্টভাবে লুকানো */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 998; /* সাইডবারের নিচে */
+    z-index: 998;
 }
 
-#currentRoomDisplayTop { margin-left: 15px; flex-grow: 1; } /* বর্তমান রুমের নামের জন্য */
+#currentRoomDisplayTop { margin-left: 15px; flex-grow: 1; }
 #loggedInUserInfo { font-size: 0.9em; margin-left: auto; color: #e0e5ec; word-wrap: break-word; }
 
 #room-selection-buttons, #private-code-section {
@@ -561,11 +595,11 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     list-style-type: none;
     margin: 0;
     padding: 15px;
-    flex-grow: 1; /* উপলব্ধ স্থানের বেশিরভাগ দখল করবে */
-    overflow-y: auto; /* প্রয়োজনে উল্লম্বভাবে স্ক্রল করবে */
+    flex-grow: 1;
+    overflow-y: auto;
     background-color: #f8f9fa;
-    display: flex; /* নতুন: মেসেজগুলো ফ্লেক্স কন্টেইনারে থাকবে */
-    flex-direction: column; /* নতুন: মেসেজগুলো কলাম বরাবর সাজানো হবে */
+    display: flex;
+    flex-direction: column;
 }
 
 /* মেসেজ কন্টেইনারের জন্য বেসিক স্টাইল */
@@ -573,8 +607,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
-    /* এখানে max-width পরিবর্তন করা হয়েছে */
-    max-width: calc(100% - 70px); /* স্ক্রিনের প্রস্থের 100% থেকে অ্যাভাটার এবং গ্যাপের জন্য কিছু জায়গা বাদ */
+    max-width: calc(100% - 70px);
     opacity: 0;
     transform: translateY(10px);
     animation: fadeInSlideUp 0.3s forwards;
@@ -603,11 +636,11 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     padding: 10px 15px;
     border-radius: 18px;
     position: relative;
-    word-wrap: break-word; /* লম্বা মেসেজের জন্য */
-    flex-grow: 1; /* মেসেজের কন্টেন্ট বাকি জায়গা নেবে */
-    min-width: 0; /* flex item এর ভিতরে overflow ঠিক করার জন্য */
-    overflow-wrap: break-word; /* নতুন: খুব লম্বা শব্দের জন্য */
-    word-break: break-all; /* নতুন: খুব লম্বা শব্দের জন্য (কিছু ব্রাউজারে) */
+    word-wrap: break-word;
+    flex-grow: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-all;
 }
 
 .message .message-content b {
@@ -652,7 +685,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     padding: 5px 12px;
     border-radius: 15px;
     max-width: fit-content;
-    display: flex; /* সিস্টেম মেসেজকেও ফ্লেক্স করা হলো */
+    display: flex;
     justify-content: center;
     align-items: center;
 }
@@ -689,7 +722,7 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     display: flex;
     gap: 10px;
     border-top: 1px solid #ddd;
-    flex-shrink: 0; /* এটি যেন ছোট না হয় এবং ফ্লেক্স কন্টেইনারে তার স্থান বজায় রাখে */
+    flex-shrink: 0;
     align-items: center;
 }
 #input {
@@ -723,16 +756,16 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
 #ephemeralToggleBtn {
-    background-color: #6c757d; /* ডিফল্ট ধূসর রঙ */
+    background-color: #6c757d;
     color: white;
-    padding: 10px 15px; /* প্যাডিং অ্যাডজাস্ট করা হয়েছে */
+    padding: 10px 15px;
     border: none;
     border-radius: 25px;
-    font-size: 1.1em; /* আইকনের আকার */
+    font-size: 1.1em;
     cursor: pointer;
     box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
-    display: flex; /* আইকনকে সেন্টারে আনতে */
+    display: flex;
     justify-content: center;
     align-items: center;
     line-height: 1;
@@ -745,15 +778,13 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
 
 /* যখন সক্রিয় থাকবে */
 #ephemeralToggleBtn.active {
-    background-color: #ffc107; /* সক্রিয় হলে হলুদ রঙ (বা তোমার পছন্দসই রঙ) */
-    color: #333; /* সক্রিয় অবস্থায় টেক্সটের রঙ */
+    background-color: #ffc107;
+    color: #333;
     box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(255,255,255,0.4);
 }
 #ephemeralToggleBtn.active:hover {
     background-color: #e0a800;
 }
-
-/* মোবাইল রেসপনসিভনেস: #form এর মধ্যে বাটনগুলোর স্টাইল */
 
 /* মোডাল স্টাইল */
 .modal {
@@ -777,9 +808,8 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     width: 80%;
     max-width: 400px;
     word-wrap: break-word;
-    /* মোডালের জন্য শ্যাডো পরিবর্তন করা হয়েছে */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* হালকা শ্যাডো */
-	  z-index: 2001;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+	z-index: 2001;
 }
 .close-button {
     color: #aaa;
@@ -834,13 +864,12 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
     margin-top: 20px;
 }
 .avatar-choice {
-    width: 65px; /* অথবা 50px, আপনার পছন্দ অনুযায়ী */
-    height: 65px; /* অথবা 50px, আপনার পছন্দ অনুযায়ী */
+    width: 65px; /* এখানে আপনার পছন্দ অনুযায়ী 65px করা হয়েছে */
+    height: 65px; /* এখানে আপনার পছন্দ অনুযায়ী 65px করা হয়েছে */
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
     transition: border-color 0.3s;
-}
 }
 .avatar-choice:hover {
     border-color: #007bff;
@@ -1039,18 +1068,17 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
 .cancel-btn:hover {
     background-color: #5a6268;
 }
-/* style.css এ যোগ করুন */
 
 /* ইফেমিরাল টগল বাটনের জন্য 'info' নোটিফিকেশন স্টাইল (যদি যোগ করতে চাও) */
 .notification.info {
-    background-color: rgba(23, 162, 184, 0.9); /* নীলচে সবুজ রঙ */
+    background-color: rgba(23, 162, 184, 0.9);
     border-color: rgba(23, 162, 184, 0.7);
 }
 
 /* মেসেজ ডিসপ্লেতে ইফেমিরাল মেসেজের জন্য স্টাইল */
 .message.ephemeral .message-content {
-    background-color: #ffe0b2; /* হালকা কমলা */
-    border: 1px dashed #ffa000; /* ড্যাশড বর্ডার */
+    background-color: #ffe0b2;
+    border: 1px dashed #ffa000;
     color: #333;
 }
 body.dark-theme .message.ephemeral .message-content {
@@ -1058,36 +1086,35 @@ body.dark-theme .message.ephemeral .message-content {
     border: 1px dashed #ffa000;
     color: #eee;
 }
-/* style.css ফাইলের শেষে যোগ করুন */
 
 /* নোটিফিকেশন কন্টেইনার */
 #notification-container {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 2000; /* নিশ্চিত করুন এটি অন্যান্য উপাদানের উপরে থাকে */
+    z-index: 2000;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    align-items: flex-end; /* ডানদিকে অ্যালাইন করবে */
+    align-items: flex-end;
 }
 
 /* প্রতিটি নোটিফিকেশন বার্তার জন্য স্টাইল */
 .notification {
-    padding: 15px 25px; /* প্যাডিং বাড়ানো হলো */
-    border-radius: 10px; /* কোণা আরও গোলাকার */
+    padding: 15px 25px;
+    border-radius: 10px;
     color: white;
     font-weight: 500;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* শ্যাডো আরও স্পষ্ট করা হলো */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     opacity: 0;
-    transform: translateX(100%); /* ডানদিক থেকে স্লাইড হয়ে আসবে */
+    transform: translateX(100%);
     transition: all 0.4s ease-in-out;
-    max-width: 300px; /* নির্দিষ্ট প্রস্থ সেট করা হলো */
-    text-align: center; /* টেক্সট সেন্টারে থাকবে */
-    word-wrap: break-word; /* লম্বা টেক্সট র‍্যাপ হবে */
-    border: 1px solid rgba(255, 255, 255, 0.3); /* হালকা বর্ডার যোগ করা হলো */
-    backdrop-filter: blur(5px); /* হালকা ব্লার ইফেক্ট (আধুনিক লুকের জন্য) */
-    -webkit-backdrop-filter: blur(5px); /* সাফারি ব্রাউজারের জন্য */
+    max-width: 300px;
+    text-align: center;
+    word-wrap: break-word;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .notification.show {
@@ -1097,13 +1124,13 @@ body.dark-theme .message.ephemeral .message-content {
 
 /* সফল নোটিফিকেশনের জন্য সবুজ রঙ */
 .notification.success {
-    background-color: rgba(40, 167, 69, 0.9); /* সবুজ রঙ, কিছুটা স্বচ্ছ */
+    background-color: rgba(40, 167, 69, 0.9);
     border-color: rgba(40, 167, 69, 0.7);
 }
 
 /* ত্রুটি নোটিফিকেশনের জন্য লাল রঙ */
 .notification.error {
-    background-color: rgba(220, 53, 69, 0.9); /* লাল রঙ, কিছুটা স্বচ্ছ */
+    background-color: rgba(220, 53, 69, 0.9);
     border-color: rgba(220, 53, 69, 0.7);
 }
 
@@ -1112,18 +1139,17 @@ body.dark-theme .message.ephemeral .message-content {
     #notification-container {
         top: 10px;
         right: 10px;
-        left: 10px; /* বামদিকেও কিছুটা মার্জিন */
-        width: auto; /* প্রস্থ স্বয়ংক্রিয় */
-        align-items: center; /* সেন্টারে অ্যালাইন করবে */
+        left: 10px;
+        width: auto;
+        align-items: center;
     }
     .notification {
-        width: 100%; /* ছোট স্ক্রিনে পুরো প্রস্থ নেবে */
-        max-width: none; /* সর্বোচ্চ প্রস্থ বাতিল */
-        font-size: 0.9em; /* ফন্ট সাইজ কমানো হলো */
+        width: 100%;
+        max-width: none;
+        font-size: 0.9em;
         padding: 12px 20px;
     }
 }
-
 
 
 /* ========================================================== */
@@ -1133,63 +1159,61 @@ body.dark-theme .message.ephemeral .message-content {
 @media (max-width: 768px) {
     #chat-container {
         width: 100%;
-        /* নতুন: height: 100% করা হয়েছে */
-        height: 100%; /* প্যারেন্ট বডির 100% উচ্চতা নেবে */
-        border-radius: 0; /* মোবাইলে কোণা গোলাকার না রেখে পুরো স্ক্রিন জুড়ে */
-        box-shadow: none; /* মোবাইলে বক্স শ্যাডো দরকার নেই */
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
     }
 
     body {
-        /* min-height: 100vh; এটি সরিয়ে শুধু height: 100%; ব্যবহার করা হয়েছে */
-        align-items: stretch; /* verticall stretched */
+        align-items: stretch;
     }
 
     /* সাইডবারকে পপ-আপ হিসেবে */
     #sidebar {
         position: fixed;
-        right: 0; /* ডানদিক থেকে আসবে */
-        left: auto; /* বামদিক থেকে আসা বাতিল */
+        right: 0;
+        left: auto;
         top: 0;
         height: 100%;
-        z-index: 1002; /* অন্যান্য মোডালের উপরে */
-        transform: translateX(100%); /* ডিফল্টভাবে ডানদিকে লুকানো */
-        box-shadow: -5px 0px 15px rgba(0,0,0,0.2); /* বামদিকে শ্যাডো */
-        width: 280px; /* মোবাইলে সাইডবারের প্রস্থ একটু বাড়ানো হলো */
-        border-right: none; /* মোবাইলে এই বর্ডার দরকার নেই */
-        border-left: 1px solid #ddd; /* বামদিকে বর্ডার */
+        z-index: 1002;
+        transform: translateX(100%);
+        box-shadow: -5px 0px 15px rgba(0,0,0,0.2);
+        width: 280px;
+        border-right: none;
+        border-left: 1px solid #ddd;
     }
     
     #sidebar.sidebar-open {
-        transform: translateX(0); /* যখন খোলা হবে */
+        transform: translateX(0);
     }
 
     /* হ্যামবার্গার মেনু এবং অনলাইন ইউজারের সংখ্যা ডিসপ্লে */
     #hamburger-menu {
-        display: block; /* মোবাইলে হ্যামবার্গার মেনু দেখাও */
-        margin-right: 10px; /* হ্যামবার্গার মেনু এবং বর্তমান রুমের নামের মধ্যে মার্জিন */
+        display: block;
+        margin-right: 10px;
     }
     #onlineUsersCountDisplay {
-        display: block; /* মোবাইলে দেখাও */
-        margin-left: 10px; /* ডান দিকে সরাতে */
+        display: block;
+        margin-left: 10px;
     }
 
     /* টপ বারে পরিবর্তন */
     #top-bar {
-        justify-content: space-between; /* উপাদানগুলো সমানভাবে ছড়াবে */
+        justify-content: space-between;
         padding: 10px;
         font-size: 1em;
-        flex-wrap: nowrap; /* চেষ্টা করবে এক লাইনে রাখতে */
-        overflow-x: hidden; /* যদি ওভারফ্লো হয় তাহলে লুকাবে, স্ক্রলবার দেখাবে না */
+        flex-wrap: nowrap;
+        overflow-x: hidden;
     }
     #currentRoomDisplayTop {
-        margin-left: 5px; /* মার্জিন কমানো হয়েছে */
-        flex-grow: 1; /* রুমের নাম যেন বেশি জায়গা নেয় */
-        text-align: center; /* সেন্টারে দেখানোর জন্য */
+        margin-left: 5px;
+        flex-grow: 1;
+        text-align: center;
         font-size: 0.9em;
-        min-width: 0; /* ফ্লেক্স-আইটেমের ওভারফ্লো ঠিক করতে */
-        white-space: nowrap; /* এক লাইনে রাখতে */
-        overflow: hidden; /* অতিরিক্ত টেক্সট লুকাবে */
-        text-overflow: ellipsis; /* শেষে ... দেখাবে */
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     #loggedInUserInfo {
         font-size: 0.8em;
@@ -1202,7 +1226,7 @@ body.dark-theme .message.ephemeral .message-content {
     #user-avatar-top {
         width: 30px;
         height: 30px;
-        flex-shrink: 0; /* যেন অ্যাভাটার ছোট না হয় */
+        flex-shrink: 0;
     }
 
     /* টপ বারের বাটনগুলো লুকানো */
@@ -1214,33 +1238,33 @@ body.dark-theme .message.ephemeral .message-content {
         display: block !important;
         font-size: 0.8em;
         padding: 6px 10px;
-        margin-left: 5px; /* ডানদিকে সামান্য মার্জিন */
-        flex-shrink: 0; /* যেন বাটন ছোট না হয় */
+        margin-left: 5px;
+        flex-shrink: 0;
     }
 
 
     /* মেসেজ ইনপুট ফর্ম */
     #form {
-        flex-direction: row; /* মোবাইলে ইনপুট ফর্ম এক লাইনে রাখা হলো */
+        flex-direction: row;
         padding: 8px;
-        gap: 8px; /* গ্যাপ কমানো হলো */
+        gap: 8px;
     }
     #input {
         flex-grow: 1;
         padding: 8px 12px;
         font-size: 0.9em;
-        margin-bottom: 0; /* মার্জিন বাতিল করা হলো */
+        margin-bottom: 0;
     }
     #emoji-btn {
-        flex-shrink: 0; /* বাটন যেন ছোট না হয় */
-        font-size: 1.3em; /* ইমোজি বাটনের সাইজ অ্যাডজাস্ট */
-        padding: 0 5px; /* প্যাডিং অ্যাডজাস্ট */
+        flex-shrink: 0;
+        font-size: 1.3em;
+        padding: 0 5px;
     }
-    #form > button { /* সেন্ড বাটন */
-        flex-shrink: 0; /* বাটন যেন ছোট না হয় */
-        font-size: 1.1em; /* সেন্ড বাটনের সাইজ অ্যাডজাস্ট */
-        padding: 8px 12px; /* প্যাডিং অ্যাডজাস্ট */
-        width: auto; /* প্রস্থ অটো */
+    #form > button {
+        flex-shrink: 0;
+        font-size: 1.1em;
+        padding: 8px 12px;
+        width: auto;
     }
 
     /* মেসেজ এরিয়া */
@@ -1281,30 +1305,29 @@ body.dark-theme .message.ephemeral .message-content {
 /* 480px এর নিচে খুব ছোট স্ক্রিনের জন্য আরও ফাইন-টিউনিং */
 @media (max-width: 480px) {
     #form {
-        /* অন্যান্য স্টাইল */
-        gap: 5px; /* গ্যাপ কমানো হলো */
+        gap: 5px;
     }
-    #emoji-btn, #form > button, #ephemeralToggleBtn { /* নতুন বাটন যোগ করা হয়েছে */
+    #emoji-btn, #form > button, #ephemeralToggleBtn {
         width: auto;
-        padding: 8px 10px; /* প্যাডিং কমানো হলো */
-        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
+        padding: 8px 10px;
+        font-size: 1em;
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {
-        flex-direction: row; /* সারি বরাবর থাকবে */
-        flex-wrap: wrap; /* প্রয়োজনে র‍্যাপ করবে */
-        justify-content: center; /* সেন্টারে */
-        gap: 8px; /* গ্যাপ */
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
     }
     #room-selection-buttons .room-btn, #private-code-section button, #private-code-section input {
-        width: calc(50% - 4px); /* দুটি বাটন/ইনপুট পাশাপাশি */
-        margin-bottom: 0; /* মারgin বাতিল */
-        font-size: 0.85em; /* ফন্ট সাইজ আরও ছোট */
-        padding: 8px 10px; /* প্যাডিং অ্যাডজাস্ট */
+        width: calc(50% - 4px);
+        margin-bottom: 0;
+        font-size: 0.85em;
+        padding: 8px 10px;
     }
     #private-code-section input {
-        width: calc(100% - 8px); /* ইনপুট ফিল্ড পুরোটা নেবে */
-        margin-bottom: 8px; /* ইনপুটের নিচে মার্জিন */
+        width: calc(100% - 8px);
+        margin-bottom: 8px;
     }
     #private-code-section button:not(:last-child) {
         margin-bottom: 0;
@@ -1312,13 +1335,12 @@ body.dark-theme .message.ephemeral .message-content {
 }
 @media (max-width: 480px) {
     #form {
-        /* অন্যান্য স্টাইল */
-        gap: 5px; /* গ্যাপ কমানো হলো */
+        gap: 5px;
     }
-    #emoji-btn, #form > button, #ephemeralToggleBtn { /* নতুন বাটন যোগ করা হয়েছে */
+    #emoji-btn, #form > button, #ephemeralToggleBtn {
         width: auto;
-        padding: 8px 10px; /* প্যাডিং কমানো হলো */
-        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
+        padding: 8px 10px;
+        font-size: 1em;
     }
 }
 /* ইফেমিরাল মোডাল স্টাইল */
@@ -1344,7 +1366,7 @@ body.dark-theme .message.ephemeral .message-content {
     box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
 #ephemeral-duration-modal .modal-content .duration-choice.off-option {
-    background-color: #dc3545; /* বন্ধ করার জন্য লাল */
+    background-color: #dc3545;
     color: white;
 }
 #ephemeral-duration-modal .modal-content .duration-choice.off-option:hover {

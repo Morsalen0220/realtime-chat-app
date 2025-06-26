@@ -1,11 +1,11 @@
 // নোটিফিকেশন দেখানোর জন্য একটি হেল্পার ফাংশন
-function showNotification(msg, type = 'success') { // msg (মেসেজ) সংক্ষেপে
+function showNotification(msg, type = 'success') {
     const container = document.getElementById('notification-container');
     if (!container) return; 
 
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = msg; // msg ব্যবহার করা হয়েছে
+    notification.textContent = msg;
 
     container.appendChild(notification);
 
@@ -20,7 +20,7 @@ function showNotification(msg, type = 'success') { // msg (মেসেজ) স�
                 container.removeChild(notification);
             }
         }, 500);
-    }, 3500); // নোটিফিকেশনটি ৩.৫ সেকেন্ড থাকবে
+    }, 3500);
 }
 
 
@@ -33,7 +33,7 @@ const UI_ELEMENTS = {
     showRegister: document.getElementById('showRegister'),
     showLogin: document.getElementById('showLogin'),
     loginUsername: document.getElementById('loginUsername'),
-    loginPassword: document.getElementById('loginUsername'), // এখানে loginUsername হবে loginPassword
+    loginPassword: document.getElementById('loginPassword'), // Corrected: This was 'loginUsername'
     loginBtn: document.getElementById('loginBtn'),
     registerUsername: document.getElementById('registerUsername'),
     registerPassword: document.getElementById('registerPassword'),
@@ -83,25 +83,24 @@ const UI_ELEMENTS = {
     cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
     registerAsUserBtn: document.getElementById('registerAsUserBtn'),
     onlineUsersCountDisplay: document.getElementById('onlineUsersCountDisplay'),
-    messagesLoader: document.getElementById('messages-loader'), // নতুন লোডার উপাদান
-    darkModeToggle: document.getElementById('darkModeToggle'), // থিম টগল
-    ephemeralToggleBtn: document.getElementById('ephemeralToggleBtn'), // ইফেমিরাল টগল বাটন
-    ephemeralDurationModal: document.getElementById('ephemeral-duration-modal'), // ইফেমিরাল মোডাল
-    ephemeralModalCloseButton: document.getElementById('ephemeralModalCloseButton'), // ইফেমিরাল মোডাল বন্ধ বাটন
-    durationChoices: document.querySelector('#ephemeral-duration-modal .duration-options') // সময়কাল অপশন কন্টেইনার
+    messagesLoader: document.getElementById('messages-loader'),
+    darkModeToggle: document.getElementById('darkModeToggle'),
+    ephemeralToggleBtn: document.getElementById('ephemeralToggleBtn'),
+    ephemeralDurationModal: document.getElementById('ephemeral-duration-modal'),
+    ephemeralModalCloseButton: document.getElementById('ephemeralModalCloseButton'),
+    durationChoices: document.querySelector('#ephemeral-duration-modal .duration-options')
 };
 
 let username = '';
 let currentRoom = '';
-let userType = 'guest';
-let hasMoreMessages = true; // আরও মেসেজ আছে কিনা ট্র্যাক করবে
-let fetchingOlderMessages = false; // মেসেজ লোড হচ্ছে কিনা ট্র্যাক করবে
-let lastFetchedMessageId = null; // লোড হওয়া সর্বশেষ মেসেজের আইডি
-let isEphemeralModeActive = false; // ইফেমিরাল মোড সক্রিয় আছে কিনা ট্র্যাক করবে
-let selectedEphemeralDuration = null; // নির্বাচিত ইফেমিরাল সময়কাল (মিলিসেকেন্ডে)
+let userType = 'guest'; // This will be updated on auth
+let hasMoreMessages = true;
+let fetchingOlderMessages = false;
+let lastFetchedMessageId = null;
+let isEphemeralModeActive = false;
+let selectedEphemeralDuration = null;
 
 
-// ইমোজি পিকারের জন্য নতুন কোড
 const emojiBtn = document.getElementById('emoji-btn');
 const messageInput = document.getElementById('input'); 
 
@@ -142,9 +141,13 @@ function setUIState(state) {
         UI_ELEMENTS.guestBtn.style.display = 'none';
     } else if (state === 'chat') {
         UI_ELEMENTS.mainChatContent.style.display = 'flex';
-        UI_ELEMENTS.loggedInUserInfo.textContent = `${username}`;
-        if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.style.display = userType === 'registered' ? 'block' : 'none';
-        if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.style.display = userType === 'guest' ? 'block' : 'none';
+        // Ensure username is updated for display
+        UI_ELEMENTS.loggedInUserInfo.textContent = `${localStorage.getItem('username') || 'Guest'}`;
+
+        // Control visibility of logout/register buttons based on current userType
+        const currentUserType = localStorage.getItem('userType');
+        if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.style.display = currentUserType === 'registered' ? 'block' : 'none';
+        if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.style.display = currentUserType === 'guest' ? 'block' : 'none';
 
         const avatar = localStorage.getItem('avatar');
         if (avatar && UI_ELEMENTS.userAvatarTop) UI_ELEMENTS.userAvatarTop.src = avatar;
@@ -167,6 +170,8 @@ async function apiRequest(endpoint, body) {
         if (!res.ok) throw new Error(data.message || 'কিছু সমস্যা হয়েছে'); 
         return { ok: true, data };
     } catch (error) {
+        // Log the actual API error to console for debugging
+        console.error('API Request Error:', error);
         return { ok: false, data: { message: error.message || 'সার্ভার ত্রুটি।' } };
     }
 }
@@ -175,53 +180,107 @@ function handleAuthSuccess(data) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('username', data.username);
     localStorage.setItem('userId', data.userId);
-    localStorage.setItem('userType', 'registered');
+    localStorage.setItem('userType', data.type || 'registered'); // Ensure userType is set correctly
     localStorage.setItem('avatar', data.avatar);
     if (data.status) localStorage.setItem('status', data.status);
-    authenticateSocket();
+    if (data.role) localStorage.setItem('userRole', data.role);
+    authenticateSocket(); // Re-authenticate socket with new token/userType
 }
 
 if (UI_ELEMENTS.showRegister) UI_ELEMENTS.showRegister.addEventListener('click', (e) => { e.preventDefault(); setUIState('register'); });
 if (UI_ELEMENTS.showLogin) UI_ELEMENTS.showLogin.addEventListener('click', (e) => { e.preventDefault(); setUIState('login'); });
 
 if (UI_ELEMENTS.loginBtn) UI_ELEMENTS.loginBtn.addEventListener('click', async () => {
-    const body = { username: UI_ELEMENTS.loginUsername.value.trim(), password: UI_ELEMENTS.loginPassword.value.trim() };
-    if (!body.username || !body.password) return showNotification('ইউজারনেম ও পাসওয়ার্ড দিন।', 'error'); 
-    const { ok, data } = await apiRequest('/api/login', body);
-    if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
-});
+    const body = { 
+        username: UI_ELEMENTS.loginUsername.value.trim(), 
+        password: UI_ELEMENTS.loginPassword.value.trim() 
+    };
 
+    if (!body.username || !body.password) {
+        return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error'); 
+    }
+
+    // নতুন ভ্যালিডেশন যোগ করুন
+    if (body.password.length < 6) {
+        // লগইনের ক্ষেত্রে এই মেসেজটি কিছুটা ভিন্ন হতে পারে, যেমন "ইউজারনেম বা পাসওয়ার্ড ভুল।"
+        // কারণ আপনি ইউজারকে পাসওয়ার্ডের দৈর্ঘ্য সরাসরি জানাতে চান না নিরাপত্তার জন্য।
+        // তবে যদি শুধু minlength ভ্যালিডেশন এর জন্য হয়, তাহলে নিচের মেসেজ ঠিক আছে।
+        return showNotification('ইউজারনেম অথবা পাসওয়ার্ড ভুল।', 'error'); 
+    }
+
+    const { ok, data } = await apiRequest('/api/login', body);
+    if (ok) { showNotification(data.message, 'success'); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
+});
 if (UI_ELEMENTS.registerBtn) UI_ELEMENTS.registerBtn.addEventListener('click', async () => {
-    const body = { username: UI_ELEMENTS.registerUsername.value.trim(), password: UI_ELEMENTS.registerPassword.value.trim() };
-    if (!body.username || !body.password) return showNotification('ইউজারনেম ও পাসওয়ার্ড দিন।', 'error'); 
+    const body = { 
+        username: UI_ELEMENTS.registerUsername.value.trim(), 
+        password: UI_ELEMENTS.registerPassword.value.trim() 
+    };
+
+    if (!body.username || !body.password) {
+        return showNotification('অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।', 'error'); 
+    }
+
+    // নতুন ভ্যালিডেশন যোগ করুন
+    if (body.password.length < 6) {
+        return showNotification('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।', 'error');
+    }
+
     const { ok, data } = await apiRequest('/api/register', body);
-    if (ok) { showNotification(data.message); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
+    if (ok) { showNotification(data.message, 'success'); handleAuthSuccess(data); } else { showNotification(data.message, 'error'); }
 });
 
 if (UI_ELEMENTS.guestBtn) UI_ELEMENTS.guestBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    const guestId = (localStorage.getItem('userId') && localStorage.getItem('userId').startsWith('guest-')) ? localStorage.getItem('userId') : null;
+    // Clear token if exists, to ensure guest mode
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('userRole'); // Clear role for guest
+    
+    // Ensure a guestId exists, or create a new one
+    let guestId = localStorage.getItem('userId');
+    let userTypeFromStorage = localStorage.getItem('userType');
+
+    // If existing userId is not a guest or no userId, generate new guestId
+    if (!guestId || !guestId.startsWith('guest-') || userTypeFromStorage !== 'guest') {
+        guestId = `guest-${Math.random().toString(36).substring(2, 9)}`;
+        localStorage.setItem('userId', guestId);
+        localStorage.setItem('username', `Guest-${guestId.substring(6, 10)}`);
+        localStorage.setItem('avatar', 'avatars/avatar1.png');
+        localStorage.setItem('userType', 'guest');
+        localStorage.setItem('status', 'আমি একজন অতিথি ব্যবহারকারী।');
+        localStorage.setItem('userRole', 'user'); // Default role for guests
+    }
+
     authenticateSocket(guestId);
 });
 
 if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.addEventListener('click', () => {
-    ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms', 'avatar', 'status'].forEach(key => localStorage.removeItem(key));
-    socket.disconnect().connect();
-    showNotification('লগআউট সফল।'); 
-    setUIState('login');
+    // Clear all user-specific data from localStorage
+    ['token', 'username', 'userId', 'userType', 'lastRoom', 'savedPrivateCode', 'savedRooms', 'avatar', 'status', 'userRole'].forEach(key => localStorage.removeItem(key));
+    
+    // Disconnect and reconnect socket to ensure fresh state
+    socket.disconnect().connect(); 
+    
+    showNotification('লগআউট সফল।', 'success'); 
+    setUIState('login'); // Redirect to login/auth screen
 });
 
 if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.addEventListener('click', () => {
+    // Clear existing user data to allow fresh registration
     localStorage.removeItem('token'); 
     localStorage.removeItem('userId'); 
     localStorage.removeItem('userType'); 
-    setUIState('register'); 
-    showNotification('রেজিস্টার করুন।', 'success'); 
+    localStorage.removeItem('userRole'); 
+    localStorage.removeItem('username');
+    localStorage.removeItem('avatar');
+    localStorage.removeItem('status');
+
+    setUIState('register'); // Go to register form
+    showNotification('আপনার তথ্য দিয়ে রেজিস্টার করুন।', 'info'); 
 });
 
 
 if (UI_ELEMENTS.clearChatBtn) UI_ELEMENTS.clearChatBtn.addEventListener('click', () => {
-    if (confirm('রুমের সব মেসেজ মুছবেন?')) { 
+    if (confirm('আপনি কি নিশ্চিত যে এই রুমের সব মেসেজ মুছে ফেলতে চান? এই কাজটি শুধুমাত্র অ্যাডমিন বা মডারেটররা করতে পারবে।')) { 
         socket.emit('clear room chat', { roomCode: currentRoom });
     }
 });
@@ -238,11 +297,17 @@ if (UI_ELEMENTS.profileModalCloseBtn) UI_ELEMENTS.profileModalCloseBtn.addEventL
 if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
     if (e.target.classList.contains('avatar-choice')) {
         const newAvatar = e.target.dataset.avatar;
+        // Check if user is registered before allowing avatar change
+        if (localStorage.getItem('userType') !== 'registered') {
+            showNotification('অ্যাভাটার পরিবর্তন করতে হলে আপনাকে রেজিস্টার করতে হবে।', 'error');
+            return;
+        }
+
         const { ok, data } = await apiRequest('/api/user/avatar', { avatar: newAvatar });
         if (ok) {
             localStorage.setItem('avatar', data.avatar);
             if (UI_ELEMENTS.userAvatarTop) UI_ELEMENTS.userAvatarTop.src = data.avatar;
-            showNotification('অ্যাভাটার পরিবর্তিত হয়েছে!'); 
+            showNotification('অ্যাভাটার পরিবর্তিত হয়েছে!', 'success'); 
         } else {
             showNotification(`অ্যাভাটার পরিবর্তন সমস্যা: ${data.message}`, 'error'); 
         }
@@ -252,6 +317,13 @@ if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click
 if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
     const newStatus = UI_ELEMENTS.statusInput.value.trim();
     if (!newStatus) return showNotification('স্ট্যাটাস খালি যাবে না।', 'error'); 
+    
+    // Check if user is registered before allowing status change
+    if (localStorage.getItem('userType') !== 'registered') {
+        showNotification('স্ট্যাটাস পরিবর্তন করতে হলে আপনাকে রেজিস্টার করতে হবে।', 'error');
+        return;
+    }
+
     if (UI_ELEMENTS.saveStatusBtn) {
         UI_ELEMENTS.saveStatusBtn.disabled = true;
         UI_ELEMENTS.saveStatusBtn.textContent = 'সেভ হচ্ছে...'; 
@@ -259,7 +331,7 @@ if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click
     const { ok, data } = await apiRequest('/api/user/status', { status: newStatus });
     if (ok) {
         localStorage.setItem('status', data.status);
-        showNotification('স্ট্যাটাস আপডেট সফল!'); 
+        showNotification('স্ট্যাটাস আপডেট সফল!', 'success'); 
         if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'none';
     } else {
         showNotification(`স্ট্যাটাস আপডেট সমস্যা: ${data.message}`, 'error'); 
@@ -271,11 +343,12 @@ if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click
 });
 
 // displayMessage ফাংশন
-function displayMessage(data, prepend = false) { // prepend প্যারামিটার যোগ করা হয়েছে
+function displayMessage(data, prepend = false) {
     const item = document.createElement('li');
     item.dataset.messageId = data._id;
 
     const currentUserId = localStorage.getItem('userId');
+    const currentUserRole = localStorage.getItem('userRole') || 'user'; // Get current user's role
 
     item.classList.add('message');
     if (data.userId === currentUserId) {
@@ -284,27 +357,25 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
         item.classList.add('theirs'); 
     }
 
-    // ইফেমিরাল মেসেজের জন্য ক্লাস যোগ করা
     if (data.isEphemeral) {
         item.classList.add('ephemeral');
     }
 
-    // ডেলিভারি/রিড রসিদ আইকন
     let statusIconHTML = '';
-    // শুধুমাত্র নিজের পাঠানো মেসেজের জন্য স্ট্যাটাস দেখাও
     if (data.userId === currentUserId) { 
         if (data.status === 'sent') {
-            statusIconHTML = '<i class="fas fa-check" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Sent"></i>'; // সেন্ড (ধূসর)
+            statusIconHTML = '<i class="fas fa-check" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Sent"></i>';
         } else if (data.status === 'delivered') {
-            statusIconHTML = '<i class="fas fa-check-double" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Delivered"></i>'; // ডেলিভার্ড (ধূসর)
+            statusIconHTML = '<i class="fas fa-check-double" style="color:#6b7280; font-size:0.75em; margin-left:5px;" title="Delivered"></i>';
         } else if (data.status === 'read') {
-            statusIconHTML = '<i class="fas fa-check-double" style="color:#3b82f6; font-size:0.75em; margin-left:5px;" title="Read"></i>'; // রিড (নীল)
+            statusIconHTML = '<i class="fas fa-check-double" style="color:#3b82f6; font-size:0.75em; margin-left:5px;" title="Read"></i>';
         }
     }
 
-    let buttonsHTML = '';
-    // যদি মেসেজটি ডিলিট না হয় এবং নিজের মেসেজ হয়
-    if (data.userId === currentUserId && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') { 
+    let buttonsHTML = ''; // Declared once
+    // Show edit/delete buttons if it's my message OR if I am admin/moderator and message is not deleted
+    if (data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' && 
+       (data.userId === currentUserId || currentUserRole === 'admin' || currentUserRole === 'moderator')) {
         buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="সম্পাদনা">✏️</button><button class="delete-btn" title="মুছুন">🗑️</button></div>`; 
     }
     const editedIndicator = data.isEdited && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' ? `<small class="edited-indicator">(সম্পাদিত)</small>` : ''; 
@@ -330,26 +401,23 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
 
     if (UI_ELEMENTS.messages) {
         if (prepend) {
-            UI_ELEMENTS.messages.prepend(item); // পুরোনো মেসেজ উপরে যোগ করা
+            UI_ELEMENTS.messages.prepend(item);
         } else {
-            UI_ELEMENTS.messages.appendChild(item); // নতুন মেসেজ নিচে যোগ করা
+            UI_ELEMENTS.messages.appendChild(item);
         }
     }
     
-    // মেসেজ যখন যুক্ত হয়, তখন IntersectionObserver সেট করা
-    // যদি এটি আমাদের মেসেজ না হয় এবং এখনও পড়া না হয়ে থাকে
     if (data.userId !== currentUserId && data.status !== 'read') { 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) { // যখন মেসেজটি ভিউপোর্টে আসে
-                    // নিশ্চিত করুন যে socket অবজেক্ট উপলব্ধ আছে
+                if (entry.isIntersecting) {
                     if (socket && socket.emit) {
                         socket.emit('message read', { messageId: data._id, room: currentRoom });
                     }
-                    observer.disconnect(); // একবার পড়া হলে অবজার্ভার ডিসকানেক্ট করো
+                    observer.disconnect();
                 }
             });
-        }, { threshold: 0.8 }); // মেসেজের 80% দেখা গেলে ট্রিগার হবে
+        }, { threshold: 0.8 });
         observer.observe(item);
     }
 
@@ -357,7 +425,6 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
         renderReactions(item, data.reactions);
     }
     
-    // স্ক্রল নিচে থাকবে যদি নতুন মেসেজ হয় বা যদি ব্যবহারকারী নিচে থাকে
     if (!prepend && UI_ELEMENTS.messages && UI_ELEMENTS.messages.scrollTop + UI_ELEMENTS.messages.clientHeight >= UI_ELEMENTS.messages.scrollHeight - 150) {
         UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
     }
@@ -396,7 +463,7 @@ function joinRoom(roomName) {
     } else if (roomName !== 'public' && UI_ELEMENTS.privateChatBtn) { 
         UI_ELEMENTS.privateChatBtn.classList.add('active');
     }
-    hasMoreMessages = true; // রুম পরিবর্তন করলে নতুন করে মেসেজ লোড শুরু হবে
+    hasMoreMessages = true;
 }
 
 function addRoomToSavedList(roomCode) {
@@ -425,37 +492,94 @@ function authenticateSocket(guestId = null) {
     socket.emit('authenticate', { token: localStorage.getItem('token'), guestId }, (res) => {
         if (res.success) {
             username = res.username;
-            userType = res.type;
+            userType = res.type; // This determines 'registered' or 'guest'
             localStorage.setItem('userId', res.userId);
             localStorage.setItem('username', res.username);
+            localStorage.setItem('userType', res.type); // Crucial for UI state
             if (res.avatar) localStorage.setItem('avatar', res.avatar);
             if (res.status) localStorage.setItem('status', res.status);
+            if (res.role) localStorage.setItem('userRole', res.role);
+
+            console.log("Authenticated as:", { username: res.username, type: res.type, userId: res.userId, role: res.role }); // Debug log
+            
             setUIState('chat');
-            const savedRoom = localStorage.getItem('lastRoom') || 'public';
-            joinRoom(savedRoom);
+            // Always join public on fresh auth/login to avoid previous private room redirection issue
+            joinRoom('public'); 
             renderSavedRooms();
         } else {
-            showNotification(res.message || 'সেশন মেয়াদোত্তীর্ণ।', 'error'); 
+            // If authentication fails, ensure clean state and show login
+            console.error("Authentication failed:", res.message); // Debug log
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('avatar');
+            localStorage.removeItem('status');
+            localStorage.removeItem('userRole');
+            
+            // If it failed and was trying to authenticate as a registered user, ensure guest state is set
+            if (!guestId) { // Only generate new guest ID if not already trying to be a specific guest
+                const newGuestId = `guest-${Math.random().toString(36).substring(2, 9)}`;
+                localStorage.setItem('userId', newGuestId);
+                localStorage.setItem('username', `Guest-${newGuestId.substring(6, 10)}`);
+                localStorage.setItem('userType', 'guest');
+                localStorage.setItem('avatar', 'avatars/avatar1.png');
+                localStorage.setItem('status', 'আমি একজন অতিথি ব্যবহারকারী।');
+                localStorage.setItem('userRole', 'user');
+            }
+            
+            showNotification(res.message || 'সেশন মেয়াদোত্তীর্ণ। অনুগ্রহ করে আবার লগইন করুন বা অতিথি হিসেবে প্রবেশ করুন।', 'error');
             setUIState('login');
         }
     });
 }
 
 window.addEventListener('load', () => {
-    const token = localStorage.getItem('token'), userId = localStorage.getItem('userId'), userType = localStorage.getItem('userType');
-    if (token && userType === 'registered') authenticateSocket();
-    else if (userId && userType === 'guest') authenticateSocket(userId);
-    else setUIState('login');
+    // Initial load logic: check for existing session
+    const token = localStorage.getItem('token');
+    const storedUserId = localStorage.getItem('userId');
+    const storedUserType = localStorage.getItem('userType'); // Get userType from localStorage
+
+    // Set global userType based on localStorage for correct UI rendering on load
+    userType = storedUserType; 
+
+    if (token && storedUserType === 'registered') {
+        authenticateSocket();
+    } else if (storedUserId && storedUserType === 'guest') {
+        authenticateSocket(storedUserId);
+    } else {
+        // If no valid session, ensure guest state is initialized for a fresh start
+        const newGuestId = `guest-${Math.random().toString(36).substring(2, 9)}`;
+        localStorage.setItem('userId', newGuestId);
+        localStorage.setItem('username', `Guest-${newGuestId.substring(6, 10)}`);
+        localStorage.setItem('userType', 'guest');
+        localStorage.setItem('avatar', 'avatars/avatar1.png');
+        localStorage.setItem('status', 'আমি একজন অতিথি ব্যবহারকারী।');
+        localStorage.setItem('userRole', 'user');
+        userType = 'guest'; // Update global userType
+        authenticateSocket(newGuestId); // Authenticate as new guest
+    }
 
     if (UI_ELEMENTS.onlineUsersList) {
         UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
             const targetUserElement = e.target.closest('.online-user');
             if (targetUserElement) {
                 const userId = targetUserElement.dataset.userId;
-                if (typeof userId === 'string' && (userId.length === 24 || userId.startsWith('guest-'))) {
-                    showUserProfile(userId);
-                } else {
-                    console.warn('ভুল ইউজার আইডি:', userId); 
+                // Profile view logic
+                if (e.target.classList.contains('online-user-avatar') || e.target.classList.contains('online-username-text')) {
+                    if (typeof userId === 'string' && (userId.length === 24 || userId.startsWith('guest-'))) {
+                        showUserProfile(userId);
+                    } else {
+                        console.warn('ভুল ইউজার আইডি:', userId); 
+                    }
+                }
+            }
+
+            // Kick user button logic
+            if (e.target.classList.contains('kick-user-btn')) {
+                const targetUserId = e.target.dataset.userId;
+                const targetUsername = e.target.dataset.username;
+                if (confirm(`আপনি কি নিশ্চিত যে ${targetUsername} কে বর্তমান রুম থেকে বের করে দিতে চান?`)) {
+                    socket.emit('kick user from room', { targetUserId: targetUserId, roomCode: currentRoom });
                 }
             }
         });
@@ -463,30 +587,26 @@ window.addEventListener('load', () => {
         console.error("ইউজার লিস্ট পাওয়া যায়নি।"); 
     }
 
-    // নতুন: স্ক্রল ইভেন্ট লিসেনার যোগ করা
     if (UI_ELEMENTS.messages) {
         UI_ELEMENTS.messages.addEventListener('scroll', () => {
             if (UI_ELEMENTS.messages.scrollTop === 0 && hasMoreMessages && !fetchingOlderMessages) {
-                // যখন ব্যবহারকারী একদম উপরে স্ক্রল করবে
                 fetchOlderMessages();
             }
         });
     }
 
-    // থিম টগল ইভেন্ট লিসেনার
     if (UI_ELEMENTS.darkModeToggle) {
-        // লোড হওয়ার সময় থিম সেট করা
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
             UI_ELEMENTS.darkModeToggle.checked = true;
         } else {
-            // ডিফল্ট লাইট থিম, সিস্টেম প্রিফারেন্স চেক করা যেতে পারে
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                // সিস্টেম ডার্ক মোড প্রিফার করে, কিন্তু লোকাল স্টোরেজে কিছু নেই
-                // চাইলে এখানে ডিফল্ট থিম ডার্ক করা যেতে পারে বা লাইট রাখা যেতে পারে
-                // বর্তমানে, লোকাল স্টোরেজ ডিফল্টকে অগ্রাধিকার দেবে
-            }
+            // Optional: check system preference if no saved theme
+            // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            //     document.body.classList.add('dark-theme');
+            //     UI_ELEMENTS.darkModeToggle.checked = true;
+            //     localStorage.setItem('theme', 'dark');
+            // }
         }
 
         UI_ELEMENTS.darkModeToggle.addEventListener('change', (event) => {
@@ -500,21 +620,18 @@ window.addEventListener('load', () => {
         });
     }
 
-    // ইফেমিরাল টগল বাটন ইভেন্ট লিসেনার
     if (UI_ELEMENTS.ephemeralToggleBtn) {
         UI_ELEMENTS.ephemeralToggleBtn.addEventListener('click', () => {
             UI_ELEMENTS.ephemeralDurationModal.style.display = 'flex';
         });
     }
 
-    // ইফেমিরাল মোডাল বন্ধ বাটন
     if (UI_ELEMENTS.ephemeralModalCloseButton) {
         UI_ELEMENTS.ephemeralModalCloseButton.addEventListener('click', () => {
             UI_ELEMENTS.ephemeralDurationModal.style.display = 'none';
         });
     }
 
-    // সময়কাল পছন্দের বাটনগুলির ইভেন্ট লিসেনার
     if (UI_ELEMENTS.durationChoices) {
         UI_ELEMENTS.durationChoices.addEventListener('click', (e) => {
             if (e.target.classList.contains('duration-choice')) {
@@ -534,18 +651,15 @@ window.addEventListener('load', () => {
     }
 });
 
-// নতুন: পুরোনো মেসেজ লোড করার ফাংশন
-// lastFetchedMessageId গ্লোবালভাবে সংজ্ঞায়িত আছে
 async function fetchOlderMessages() {
     if (!hasMoreMessages || fetchingOlderMessages) return;
 
     fetchingOlderMessages = true;
     if (UI_ELEMENTS.messagesLoader) {
-        UI_ELEMENTS.messagesLoader.style.display = 'flex'; // লোডার দেখাও
+        UI_ELEMENTS.messagesLoader.style.display = 'flex';
         UI_ELEMENTS.messagesLoader.textContent = 'লোড হচ্ছে...';
     }
     
-    // বর্তমান রুমের প্রথম মেসেজের আইডি নাও
     const firstMessageElement = UI_ELEMENTS.messages.querySelector('.message');
     lastFetchedMessageId = firstMessageElement ? firstMessageElement.dataset.messageId : null;
 
@@ -554,11 +668,10 @@ async function fetchOlderMessages() {
 }
 
 
-// Socket.IO ইভেন্ট লিসেনার: পুরোনো মেসেজ সার্ভার থেকে পেলে
 socket.on('older messages', ({ messages, hasMore }) => {
     console.log(`Received ${messages.length} older messages. Has more: ${hasMore}`);
     if (UI_ELEMENTS.messagesLoader) {
-        UI_ELEMENTS.messagesLoader.style.display = 'none'; // লোডার লুকান
+        UI_ELEMENTS.messagesLoader.style.display = 'none';
     }
     fetchingOlderMessages = false;
     hasMoreMessages = hasMore;
@@ -568,15 +681,14 @@ socket.on('older messages', ({ messages, hasMore }) => {
         UI_ELEMENTS.messagesLoader.textContent = 'আর কোনো পুরোনো মেসেজ নেই।';
         setTimeout(() => {
             if (UI_ELEMENTS.messagesLoader) UI_ELEMENTS.messagesLoader.style.display = 'none';
-            if (UI_ELEMENTS.messagesLoader) UI_ELEMENTS.messagesLoader.textContent = 'লোড হচ্ছে...'; // ডিফল্ট টেক্সট ফিরিয়ে আনা
+            if (UI_ELEMENTS.messagesLoader) UI_ELEMENTS.messagesLoader.textContent = 'লোড হচ্ছে...';
         }, 3000);
         return;
     }
 
     const oldScrollHeight = UI_ELEMENTS.messages.scrollHeight;
-    messages.forEach(msg => displayMessage(msg, true)); //prepend = true মানে মেসেজগুলো উপরে যোগ হবে
+    messages.forEach(msg => displayMessage(msg, true));
     
-    // স্ক্রল পজিশন অ্যাডজাস্ট করা যাতে লোড হওয়ার পর স্ক্রিন জাম্প না করে
     const newScrollHeight = UI_ELEMENTS.messages.scrollHeight;
     UI_ELEMENTS.messages.scrollTop = newScrollHeight - oldScrollHeight;
 });
@@ -596,7 +708,6 @@ if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('cli
 });
 
 if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
-    // ডিবাগিং লগ যোগ করা হয়েছে
     console.log('[ক্লায়েন্ট] "প্রবেশ" বাটন ক্লিক হয়েছে।'); 
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) {
@@ -618,7 +729,6 @@ if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListe
 });
 
 if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventListener('click', () => {
-    // ডিবাগিং লগ যোগ করা হয়েছে
     console.log('[ক্লায়েন্ট] "তৈরি" বাটন ক্লিক হয়েছে।'); 
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) {
@@ -631,7 +741,7 @@ if (UI_ELEMENTS.createPrivateRoomBtn) UI_ELEMENTS.createPrivateRoomBtn.addEventL
         console.log(`[ক্লায়েন্ট] 'create private room' থেকে রেসপন্স: ${JSON.stringify(response)}`); 
         if (response.success) {
             joinRoom(privateCode);
-            showNotification(response.message);
+            showNotification(response.message, 'success'); // Added success type
             console.log(`[ক্লায়েন্ট] রুম সফলভাবে তৈরি হয়েছে ও যোগ দিয়েছে: ${privateCode}`); 
         } else {
             showNotification(response.message || 'রুম তৈরি সমস্যা।', 'error');
@@ -648,14 +758,10 @@ if (UI_ELEMENTS.form) UI_ELEMENTS.form.addEventListener('submit', (e) => {
             message,
             room: currentRoom,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isEphemeral: isEphemeralModeActive, // ইফেমিরাল ফ্ল্যাগ যোগ করা
-            ephemeralDuration: selectedEphemeralDuration // নির্বাচিত সময়কাল যোগ করা
+            isEphemeral: isEphemeralModeActive,
+            ephemeralDuration: selectedEphemeralDuration
         });
         if (UI_ELEMENTS.input) UI_ELEMENTS.input.value = '';
-        // মোডটি স্বয়ংক্রিয়ভাবে বন্ধ করতে চাইলে:
-        // isEphemeralModeActive = false;
-        // if (UI_ELEMENTS.ephemeralToggleBtn) UI_ELEMENTS.ephemeralToggleBtn.classList.remove('active');
-        // selectedEphemeralDuration = null;
     }
 });
 
@@ -681,15 +787,12 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
     const messageContent = e.target.closest('.message-content');
     const messageLi = e.target.closest('li[data-message-id]');
     
-    // ইমোজি প্যালেট দেখানো বা লুকানো
     if (messageContent && !e.target.classList.contains('reaction-choice') && !e.target.closest('.message-actions')) {
         const palette = messageContent.querySelector('.reaction-palette');
         if (palette) {
-            // সমস্ত প্যালেট লুকান
             document.querySelectorAll('.reaction-palette').forEach(p => {
                 if (p !== palette) p.style.display = 'none';
             });
-            // বর্তমান মেসেজের প্যালেট টগল করুন
             palette.style.display = palette.style.display === 'none' ? 'flex' : 'none';
         }
     }
@@ -717,7 +820,6 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
     }
 });
 
-// নতুন কোড: ডিলিট কনফার্মেশন মোডালের জন্য ইভেন্ট লিসেনার
 if (UI_ELEMENTS.deleteModalCloseButton) {
     UI_ELEMENTS.deleteModalCloseButton.addEventListener('click', () => {
         if (UI_ELEMENTS.deleteConfirmationModal) UI_ELEMENTS.deleteConfirmationModal.style.display = 'none';
@@ -759,6 +861,8 @@ async function showUserProfile(userId) {
             if (UI_ELEMENTS.profileViewAvatar) UI_ELEMENTS.profileViewAvatar.src = user.avatar;
             if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = user.username;
             if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = user.status;
+            // You might want to display user role here as well
+            // if (UI_ELEMENTS.profileViewRole) UI_ELEMENTS.profileViewRole.textContent = `Role: ${user.role}`;
         } else {
             if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার নেই।'; 
         }
@@ -779,16 +883,25 @@ socket.on('user typing', ({ username: typingUsername }) => {
     }
 });
 
-// public/main.js -> socket.on('online users list', ...)
 socket.on('online users list', (users) => {
+    // Filter unique users by userId
     const uniqueUsers = [...new Map(users.map(item => [item.userId, item])).values()];
-    const listHtml = uniqueUsers.map(user =>
-        `<li class="online-user" data-user-id="${user.userId}">
-            <img src="${user.avatar}" class="online-user-avatar" data-user-id="${user.userId}">
-            <span class="online-status-dot"></span> 
-            <span class="online-username-text">${user.username}</span> 
-        </li>`
-    ).join('');
+    const currentUserRole = localStorage.getItem('userRole') || 'user';
+    const currentLoggedInUserId = localStorage.getItem('userId');
+
+    const listHtml = uniqueUsers.map(user => {
+        let kickButton = '';
+        // Only show kick button if current user is admin/moderator AND not kicking self
+        if ((currentUserRole === 'admin' || currentUserRole === 'moderator') && user.userId !== currentLoggedInUserId) {
+            kickButton = `<button class="kick-user-btn" data-user-id="${user.userId}" data-username="${user.username}" title="ব্যবহারকারীকে বের করে দিন">Kick</button>`;
+        }
+        return `<li class="online-user" data-user-id="${user.userId}">
+                    <img src="${user.avatar}" class="online-user-avatar" data-user-id="${user.userId}">
+                    <span class="online-status-dot"></span> 
+                    <span class="online-username-text">${user.username}</span> 
+                    ${kickButton}
+                </li>`;
+    }).join('');
     if (UI_ELEMENTS.onlineUsersList) {
         UI_ELEMENTS.onlineUsersList.innerHTML = listHtml;
     }
@@ -801,7 +914,7 @@ socket.on('online users list', (users) => {
 socket.on('previous messages', (msgs) => {
     if (UI_ELEMENTS.messages) {
         UI_ELEMENTS.messages.innerHTML = '';
-        msgs.forEach(msg => displayMessage(msg, false)); // false মানে নতুন মেসেজ হিসেবে যোগ হবে
+        msgs.forEach(msg => displayMessage(msg, false));
     }
 });
 
@@ -813,6 +926,8 @@ socket.on('user joined', (msg) => {
     item.innerHTML = `<i>${msg}</i>`;
     if (UI_ELEMENTS.messages) {
         UI_ELEMENTS.messages.appendChild(item);
+        // Scroll to bottom when a new system message appears
+        UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
     }
 });
 
@@ -821,19 +936,16 @@ socket.on('message edited', ({ messageId, newMessageText }) => {
     if (msgLi) {
         const textElem = msgLi.querySelector('.message-text');
         if (textElem) textElem.textContent = newMessageText;
-        // যদি মেসেজ মুছে ফেলা হয়, তাহলে এডিট/ডিলিট বাটন সরিয়ে ফেলা
         if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') { 
             const messageActions = msgLi.querySelector('.message-actions');
             if (messageActions) messageActions.remove();
         }
-        // যদি এখনও এডিটেড ইন্ডিকেটর না থাকে এবং মেসেজটি মুছে ফেলা না হয়
         if (!msgLi.querySelector('.edited-indicator') && newMessageText !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
             const indicator = document.createElement('small');
             indicator.className = 'edited-indicator';
             indicator.textContent = ' (সম্পাদিত)'; 
             textElem.insertAdjacentElement('afterend', indicator);
-        } else if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
-            // যদি মেসেজ মুছে ফেলা হয় এবং এডিটেড ইন্ডিকেটর থাকে, তাহলে সেটি সরিয়ে ফেলা
+        } else if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে.') { // Ensure exact match for removal
             const indicator = msgLi.querySelector('.edited-indicator');
             if (indicator) indicator.remove();
         }
@@ -847,10 +959,11 @@ socket.on('chat cleared', () => {
         item.classList.add('system-message');
         item.innerHTML = `<i>চ্যাট পরিষ্কার করা হলো।</i>`; 
         if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.appendChild(item);
+        // Scroll to bottom after clearing chat
+        UI_ELEMENTS.messages.scrollTop = UI_ELEMENTS.messages.scrollHeight;
     }
 });
 
-// socket.on('message status updated') ফাংশন - ইনলাইন স্টাইল সহ
 socket.on('message status updated', ({ messageId, status }) => {
     console.log(`[ক্লায়েন্ট] মেসেজ স্ট্যাটাস আপডেট ইভেন্ট পাওয়া গেছে (ID: ${messageId}, স্ট্যাটাস: ${status})`); 
 
@@ -864,30 +977,26 @@ socket.on('message status updated', ({ messageId, status }) => {
 
             if (status === 'sent') {
                 iconClass = 'fas fa-check';
-                iconColor = '#6b7280'; // ধূসর
+                iconColor = '#6b7280';
                 iconTitle = 'Sent';
             } else if (status === 'delivered') {
                 iconClass = 'fas fa-check-double';
-                iconColor = '#6b7280'; // ধূসর
+                iconColor = '#6b7280';
                 iconTitle = 'Delivered';
             } else if (status === 'read') {
                 iconClass = 'fas fa-check-double';
-                iconColor = '#3b82f6'; // নীল
+                iconColor = '#3b82f6';
                 iconTitle = 'Read';
             }
             
             const newIconHTML = `<i class="${iconClass}" style="color:${iconColor}; font-size:0.75em; margin-left:5px;" title="${iconTitle}"></i>`;
             
-            // বিদ্যমান আইকনটি খুঁজে বের করে আপডেট করা
             const existingIcon = timestampSpan.querySelector('.fas');
             if (existingIcon) {
-                // বিদ্যমান আইকনের ক্লাস এবং স্টাইল পরিবর্তন করো
-                existingIcon.className = iconClass; // ক্লাস পরিবর্তন
-                existingIcon.style.color = iconColor; // রঙ পরিবর্তন
-                existingIcon.title = iconTitle; // টাইটেল পরিবর্তন
-                // অন্যান্য স্টাইল যেমন font-size, margin-left অপরিবর্তিত থাকবে
+                existingIcon.className = iconClass;
+                existingIcon.style.color = iconColor;
+                existingIcon.title = iconTitle;
             } else {
-                // যদি কোনো কারণে আইকন না থাকে, তবে নতুন আইকন HTML যোগ করো
                 timestampSpan.innerHTML += newIconHTML;
             }
         }
@@ -908,6 +1017,13 @@ socket.on('reactions updated', ({ messageId, reactions }) => {
     const messageLi = document.querySelector(`li[data-message-id="${messageId}"]`);
     if (messageLi) {
         renderReactions(messageLi, reactions);
+    }
+});
+
+socket.on('user kicked', ({ roomCode, message }) => {
+    showNotification(message, 'error');
+    if (currentRoom === roomCode) {
+        joinRoom('public'); // If kicked from current room, go to public
     }
 });
 
