@@ -22,7 +22,268 @@ body {
     align-items: center;
     /* min-height: 100vh; এটি সরিয়ে শুধু height: 100%; ব্যবহার করা হয়েছে */
     overflow: hidden; /* পুরো পেজের ওভারফ্লো যেন না হয় */
+    transition: background-color 0.3s ease; /* থিম পরিবর্তনের জন্য মসৃণ ট্রানজিশন */
 }
+
+/* ডার্ক থিম স্টাইল */
+body.dark-theme {
+    background-color: #1a202c; /* গাঢ় ব্যাকগ্রাউন্ড */
+    color: #e2e8f0; /* হালকা টেক্সট */
+}
+
+body.dark-theme #chat-container {
+    background-color: #2d3748; /* গাঢ় কন্টেইনার */
+    box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4),
+                -10px -10px 20px rgba(74, 85, 104, 0.6);
+}
+
+body.dark-theme .auth-box {
+    background-color: #2d3748;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4), -5px -5px 10px rgba(74, 85, 104, 0.6);
+}
+
+body.dark-theme .auth-box h2 {
+    color: #e2e8f0;
+}
+
+body.dark-theme #login-form input, 
+body.dark-theme #register-form input {
+    background-color: #1a202c;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+    color: #e2e8f0;
+}
+
+body.dark-theme #loginBtn, body.dark-theme #registerBtn, body.dark-theme #guestBtn {
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4),
+                -3px -3px 6px rgba(74, 85, 104, 0.6);
+}
+body.dark-theme #loginBtn:hover, body.dark-theme #registerBtn:hover, body.dark-theme #guestBtn:hover {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+}
+
+body.dark-theme .auth-box p, body.dark-theme .auth-box a {
+    color: #cbd5e0;
+}
+
+body.dark-theme #sidebar {
+    background-color: #2d3748;
+    border-right-color: #4a5568;
+}
+
+body.dark-theme #sidebar h3 {
+    color: #e2e8f0;
+    border-bottom-color: #4a5568;
+}
+
+body.dark-theme .online-user:hover {
+    background-color: #4a5568;
+}
+
+body.dark-theme #chat-area {
+    background-color: #2d3748;
+}
+
+body.dark-theme #top-bar {
+    background-color: #4299e1; /* একটু ভিন্ন নীল */
+    border-bottom-color: #3182ce;
+}
+
+body.dark-theme .top-bar-btn {
+    background-color: #3182ce;
+}
+body.dark-theme .top-bar-btn:hover {
+    background-color: #2b6cb0;
+}
+
+body.dark-theme #room-selection-buttons, body.dark-theme #private-code-section {
+    background-color: #2d3748;
+    border-bottom-color: #4a5568;
+}
+body.dark-theme #room-selection-buttons .room-btn.active {
+    background-color: #4299e1;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(74, 85, 104,0.4);
+}
+body.dark-theme #private-code-section input {
+    background-color: #1a202c;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+    color: #e2e8f0;
+}
+body.dark-theme #joinPrivateRoomBtn { background-color: #dd6b20; }
+body.dark-theme #createPrivateRoomBtn { background-color: #48bb78; }
+
+body.dark-theme #messages {
+    background-color: #1a202c;
+}
+
+body.dark-theme .message.theirs .message-content {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+body.dark-theme .message.mine .message-content {
+    background-color: #48bb78;
+    color: #e2e8f0;
+}
+
+body.dark-theme .message.system {
+    background-color: #4a5568;
+    color: #cbd5e0;
+}
+
+body.dark-theme .edit-btn:hover, body.dark-theme .delete-btn:hover {
+    background-color: #4a5568;
+}
+body.dark-theme .edited-indicator {
+    color: #a0aec0;
+}
+body.dark-theme .timestamp {
+    color: #a0aec0;
+}
+body.dark-theme #typing-indicator {
+    color: #a0aec0;
+}
+
+body.dark-theme #form {
+    background-color: #2d3748;
+    border-top-color: #4a5568;
+}
+body.dark-theme #input {
+    background-color: #1a202c;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+    color: #e2e8f0;
+}
+body.dark-theme #form > button {
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), -3px -3px 6px rgba(74, 85, 104, 0.6);
+}
+body.dark-theme #form > button:hover {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+}
+body.dark-theme #ephemeralToggleBtn {
+    background-color: #a0aec0; /* ডিফল্ট ধূসর রঙ */
+    color: #1a202c;
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), -3px -3px 6px rgba(74, 85, 104, 0.6);
+}
+body.dark-theme #ephemeralToggleBtn:hover {
+    background-color: #718096;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+}
+body.dark-theme #ephemeralToggleBtn.active {
+    background-color: #ecc94b; /* সক্রিয় হলে হলুদ রঙ (বা তোমার পছন্দসই রঙ) */
+    color: #2d3748; /* সক্রিয় অবস্থায় টেক্সটের রঙ */
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(74, 85, 104,0.4);
+}
+body.dark-theme #ephemeralToggleBtn.active:hover {
+    background-color: #d69e2e;
+}
+
+body.dark-theme .modal-content {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+body.dark-theme .close-button {
+    color: #e2e8f0;
+}
+body.dark-theme .close-button:hover, body.dark-theme .close-button:focus {
+    color: #cbd5e0;
+}
+body.dark-theme #saved-rooms-list li, body.dark-theme #online-users-list-modal li {
+    color: #cbd5e0;
+    border-bottom-color: #4a5568;
+}
+body.dark-theme #saved-rooms-list li:hover {
+    background-color: #4a5568;
+}
+
+body.dark-theme #profile-modal .modal-content h2,
+body.dark-theme #view-profile-modal .modal-content h2 {
+    color: #e2e8f0;
+}
+
+body.dark-theme .avatar-choice:hover {
+    border-color: #4299e1;
+}
+
+body.dark-theme #status-input {
+    background-color: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+body.dark-theme #save-status-btn {
+    background-color: #48bb78;
+}
+body.dark-theme #save-status-btn:hover {
+    background-color: #38a169;
+}
+body.dark-theme #save-status-btn:disabled {
+    background-color: #718096;
+}
+
+body.dark-theme #profile-details img {
+    border-color: #4a5568;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+body.dark-theme #profile-details h2 {
+    color: #e2e8f0;
+}
+body.dark-theme #profile-details p {
+    color: #cbd5e0;
+}
+
+body.dark-theme .reaction-palette {
+    background-color: #4a5568;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+body.dark-theme .reaction-display {
+    background-color: #63b3ed;
+    border-color: #4299e1;
+    color: #1a202c;
+}
+
+body.dark-theme .notification.success {
+    background-color: rgba(76, 175, 80, 0.9);
+    border-color: rgba(76, 175, 80, 0.7);
+}
+body.dark-theme .notification.error {
+    background-color: rgba(244, 67, 54, 0.9);
+    border-color: rgba(244, 67, 54, 0.7);
+}
+body.dark-theme .notification.info {
+    background-color: rgba(66, 153, 225, 0.9); /* হালকা নীল/সাদা */
+    border-color: rgba(66, 153, 225, 0.7);
+}
+
+body.dark-theme .confirm-btn {
+    background-color: #e53e3e;
+}
+body.dark-theme .confirm-btn:hover {
+    background-color: #c53030;
+}
+body.dark-theme .cancel-btn {
+    background-color: #718096;
+}
+body.dark-theme .cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+body.dark-theme .ephemeral-duration-modal .duration-choice {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+body.dark-theme .ephemeral-duration-modal .duration-choice:hover {
+    background-color: #63b3ed;
+}
+body.dark-theme .ephemeral-duration-modal .duration-choice.off-option {
+    background-color: #718096;
+}
+body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
+    background-color: #5a6268;
+}
+
 
 #chat-container {
     background-color: #ffffff;
@@ -573,12 +834,13 @@ body {
     margin-top: 20px;
 }
 .avatar-choice {
-    width: 60px;
-    height: 60px;
+    width: 65px; /* অথবা 50px, আপনার পছন্দ অনুযায়ী */
+    height: 65px; /* অথবা 50px, আপনার পছন্দ অনুযায়ী */
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
     transition: border-color 0.3s;
+}
 }
 .avatar-choice:hover {
     border-color: #007bff;
@@ -964,7 +1226,7 @@ body.dark-theme .message.ephemeral .message-content {
         gap: 8px; /* গ্যাপ কমানো হলো */
     }
     #input {
-        flex-grow: 1; /* ইনপুট ফিল্ড বাকি জায়গা নেবে */
+        flex-grow: 1;
         padding: 8px 12px;
         font-size: 0.9em;
         margin-bottom: 0; /* মার্জিন বাতিল করা হলো */
@@ -1019,19 +1281,13 @@ body.dark-theme .message.ephemeral .message-content {
 /* 480px এর নিচে খুব ছোট স্ক্রিনের জন্য আরও ফাইন-টিউনিং */
 @media (max-width: 480px) {
     #form {
-        flex-wrap: nowrap; /* নিশ্চিত করে এক লাইনে থাকবে */
-        justify-content: space-between; /* উপাদানগুলো ছড়িয়ে থাকবে */
-        gap: 5px; /* গ্যাপ আরও কমানো হলো */
+        /* অন্যান্য স্টাইল */
+        gap: 5px; /* গ্যাপ কমানো হলো */
     }
-    #input {
-        flex-grow: 1;
-        width: auto; /* ইনপুট ফিল্ড অবশিষ্ট জায়গা নেবে */
-        min-width: 80px; /* খুব ছোট স্ক্রিনে ইনপুটের সর্বনিম্ন প্রস্থ */
-    }
-    #emoji-btn, #form > button {
+    #emoji-btn, #form > button, #ephemeralToggleBtn { /* নতুন বাটন যোগ করা হয়েছে */
         width: auto;
-        padding: 8px 10px;
-        font-size: 1em;
+        padding: 8px 10px; /* প্যাডিং কমানো হলো */
+        font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
     }
     /* room-selection-buttons ও private-code-section ছোট স্ক্রিনে কলাম আকারে */
     #room-selection-buttons, #private-code-section {
@@ -1064,4 +1320,33 @@ body.dark-theme .message.ephemeral .message-content {
         padding: 8px 10px; /* প্যাডিং কমানো হলো */
         font-size: 1em; /* ফন্ট সাইজ আরও কমানো হলো */
     }
+}
+/* ইফেমিরাল মোডাল স্টাইল */
+#ephemeral-duration-modal .modal-content .duration-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+#ephemeral-duration-modal .modal-content .duration-choice {
+    background-color: #f0f2f5;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    box-shadow: 2px 2px 5px rgba(163, 177, 198, 0.6), -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+#ephemeral-duration-modal .modal-content .duration-choice:hover {
+    background-color: #e0e5ec;
+    box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+#ephemeral-duration-modal .modal-content .duration-choice.off-option {
+    background-color: #dc3545; /* বন্ধ করার জন্য লাল */
+    color: white;
+}
+#ephemeral-duration-modal .modal-content .duration-choice.off-option:hover {
+    background-color: #c82333;
 }

@@ -33,7 +33,7 @@ const UI_ELEMENTS = {
     showRegister: document.getElementById('showRegister'),
     showLogin: document.getElementById('showLogin'),
     loginUsername: document.getElementById('loginUsername'),
-    loginPassword: document.getElementById('loginPassword'),
+    loginPassword: document.getElementById('loginUsername'), // এখানে loginUsername হবে loginPassword
     loginBtn: document.getElementById('loginBtn'),
     registerUsername: document.getElementById('registerUsername'),
     registerPassword: document.getElementById('registerPassword'),
@@ -284,6 +284,11 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
         item.classList.add('theirs'); 
     }
 
+    // ইফেমিরাল মেসেজের জন্য ক্লাস যোগ করা
+    if (data.isEphemeral) {
+        item.classList.add('ephemeral');
+    }
+
     // ডেলিভারি/রিড রসিদ আইকন
     let statusIconHTML = '';
     // শুধুমাত্র নিজের পাঠানো মেসেজের জন্য স্ট্যাটাস দেখাও
@@ -298,10 +303,11 @@ function displayMessage(data, prepend = false) { // prepend প্যারা�
     }
 
     let buttonsHTML = '';
-    if (data.userId === currentUserId && data.message !== 'মেসেজ মোছা হয়েছে।') { 
+    // যদি মেসেজটি ডিলিট না হয় এবং নিজের মেসেজ হয়
+    if (data.userId === currentUserId && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') { 
         buttonsHTML = `<div class="message-actions"><button class="edit-btn" title="সম্পাদনা">✏️</button><button class="delete-btn" title="মুছুন">🗑️</button></div>`; 
     }
-    const editedIndicator = data.isEdited && data.message !== 'মেসেজ মোছা হয়েছে।' ? `<small class="edited-indicator">(সম্পাদিত)</small>` : ''; 
+    const editedIndicator = data.isEdited && data.message !== 'এই মেসেজটি মুছে ফেলা হয়েছে।' ? `<small class="edited-indicator">(সম্পাদিত)</small>` : ''; 
     const reactionsHTML = `<div class="message-reactions"></div>`;
     const reactionPaletteHTML = `<div class="reaction-palette" style="display: none;"><button class="reaction-choice" data-emoji="😄">😄</button><button class="reaction-choice" data-emoji="😐">😐</button><button class="reaction-choice" data-emoji="😢">😢</button></div>`;
     
@@ -493,6 +499,39 @@ window.addEventListener('load', () => {
             }
         });
     }
+
+    // ইফেমিরাল টগল বাটন ইভেন্ট লিসেনার
+    if (UI_ELEMENTS.ephemeralToggleBtn) {
+        UI_ELEMENTS.ephemeralToggleBtn.addEventListener('click', () => {
+            UI_ELEMENTS.ephemeralDurationModal.style.display = 'flex';
+        });
+    }
+
+    // ইফেমিরাল মোডাল বন্ধ বাটন
+    if (UI_ELEMENTS.ephemeralModalCloseButton) {
+        UI_ELEMENTS.ephemeralModalCloseButton.addEventListener('click', () => {
+            UI_ELEMENTS.ephemeralDurationModal.style.display = 'none';
+        });
+    }
+
+    // সময়কাল পছন্দের বাটনগুলির ইভেন্ট লিসেনার
+    if (UI_ELEMENTS.durationChoices) {
+        UI_ELEMENTS.durationChoices.addEventListener('click', (e) => {
+            if (e.target.classList.contains('duration-choice')) {
+                selectedEphemeralDuration = parseInt(e.target.dataset.duration);
+                if (selectedEphemeralDuration > 0) {
+                    isEphemeralModeActive = true;
+                    UI_ELEMENTS.ephemeralToggleBtn.classList.add('active');
+                    showNotification(`গোপন মোড সক্রিয়: ${e.target.textContent} পর মেসেজ মুছে যাবে।`, 'info');
+                } else {
+                    isEphemeralModeActive = false;
+                    UI_ELEMENTS.ephemeralToggleBtn.classList.remove('active');
+                    showNotification('গোপন মোড নিষ্ক্রিয় করা হয়েছে।', 'info');
+                }
+                UI_ELEMENTS.ephemeralDurationModal.style.display = 'none';
+            }
+        });
+    }
 });
 
 // নতুন: পুরোনো মেসেজ লোড করার ফাংশন
@@ -642,12 +681,19 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
     const messageContent = e.target.closest('.message-content');
     const messageLi = e.target.closest('li[data-message-id]');
     
-    if (messageContent && !e.target.classList.contains('reaction-choice')) {
+    // ইমোজি প্যালেট দেখানো বা লুকানো
+    if (messageContent && !e.target.classList.contains('reaction-choice') && !e.target.closest('.message-actions')) {
         const palette = messageContent.querySelector('.reaction-palette');
         if (palette) {
+            // সমস্ত প্যালেট লুকান
+            document.querySelectorAll('.reaction-palette').forEach(p => {
+                if (p !== palette) p.style.display = 'none';
+            });
+            // বর্তমান মেসেজের প্যালেট টগল করুন
             palette.style.display = palette.style.display === 'none' ? 'flex' : 'none';
         }
     }
+    
     if (e.target.classList.contains('reaction-choice')) {
         const messageId = messageLi.dataset.messageId;
         const emoji = e.target.dataset.emoji;
@@ -775,14 +821,21 @@ socket.on('message edited', ({ messageId, newMessageText }) => {
     if (msgLi) {
         const textElem = msgLi.querySelector('.message-text');
         if (textElem) textElem.textContent = newMessageText;
-        if (newMessageText === 'মেসেজ মোছা হয়েছে।') { 
-            if (msgLi.querySelector('.message-actions')) msgLi.querySelector('.message-actions').remove();
+        // যদি মেসেজ মুছে ফেলা হয়, তাহলে এডিট/ডিলিট বাটন সরিয়ে ফেলা
+        if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') { 
+            const messageActions = msgLi.querySelector('.message-actions');
+            if (messageActions) messageActions.remove();
         }
-        if (!msgLi.querySelector('.edited-indicator') && textElem) {
+        // যদি এখনও এডিটেড ইন্ডিকেটর না থাকে এবং মেসেজটি মুছে ফেলা না হয়
+        if (!msgLi.querySelector('.edited-indicator') && newMessageText !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
             const indicator = document.createElement('small');
             indicator.className = 'edited-indicator';
             indicator.textContent = ' (সম্পাদিত)'; 
             textElem.insertAdjacentElement('afterend', indicator);
+        } else if (newMessageText === 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
+            // যদি মেসেজ মুছে ফেলা হয় এবং এডিটেড ইন্ডিকেটর থাকে, তাহলে সেটি সরিয়ে ফেলা
+            const indicator = msgLi.querySelector('.edited-indicator');
+            if (indicator) indicator.remove();
         }
     }
 });
@@ -873,6 +926,9 @@ window.addEventListener('click', (event) => {
     }
     if (UI_ELEMENTS.viewProfileModal && event.target === UI_ELEMENTS.viewProfileModal) {
         UI_ELEMENTS.viewProfileModal.style.display = 'none';
+    }
+    if (UI_ELEMENTS.ephemeralDurationModal && event.target === UI_ELEMENTS.ephemeralDurationModal) {
+        UI_ELEMENTS.ephemeralDurationModal.style.display = 'none';
     }
 });
 
