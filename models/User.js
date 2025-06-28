@@ -23,10 +23,10 @@ const UserSchema = new mongoose.Schema({
         default: 'Hey there! I am using this chat app.',
         maxlength: 150
     },
-    role: { // নতুন: রোলের ফিল্ড যোগ করা হয়েছে
+    role: { // নতুন: রোলের ফিল্ড যোগ করা হয়েছে
         type: String,
         enum: ['user', 'moderator', 'admin'], // সম্ভাব্য রোলগুলো
-        default: 'user'
+        default: 'user' // ডিফল্ট রোল 'user'
     },
     createdAt: {
         type: Date,

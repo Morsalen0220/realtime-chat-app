@@ -11,13 +11,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User'); // আপনার User মডেল ইম্পোর্ট করা হয়েছে
-const { throws } = require('assert'); // এটি সম্ভবত অপ্রয়োজনীয়, সরিয়ে দেওয়া যেতে পারে
+const Room = require('./models/Room'); // Room মডেল ইম্পোর্ট করা হয়েছে
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// প্রতি পেজে কতগুলো মেসেজ লোড হবে
 const MESSAGES_PER_PAGE = 20;
 
 mongoose.connect(MONGODB_URI)
@@ -39,16 +38,15 @@ const messageSchema = new mongoose.Schema({
     isGuest: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-    status: { type: String, default: 'sent' }, // 'sent', 'delivered', 'read'
-    isEphemeral: { type: Boolean, default: false }, // নতুন ইফেমিরাল ফিল্ড
-    ephemeralAt: { type: Date } // মেসেজ কখন মুছে যাবে তার টাইমস্ট্যাম্প
+    status: { type: String, default: 'sent' },
+    isEphemeral: { type: Boolean, default: false },
+    ephemeralAt: { type: Date }
 });
 const Message = mongoose.model('Message', messageSchema);
 
 app.use(express.json());
 app.use(express.static('public'));
 
-// একটি ছোট মিডলওয়্যার যা JWT টোকেন ভেরিফাই করবে
 const protect = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer')) {
@@ -58,6 +56,7 @@ const protect = (req, res, next) => {
             req.userId = decoded.id;
             next();
         } catch (error) {
+            console.error("JWT Verification Error:", error.message); // ডিবাগ লগ
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     } else {
@@ -65,7 +64,6 @@ const protect = (req, res, next) => {
     }
 };
 
-// রেজিস্ট্রেশন রুট
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ message: 'অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।' });
@@ -73,15 +71,14 @@ app.post('/api/register', async (req, res) => {
         if (await User.findOne({ username })) return res.status(400).json({ message: 'এই ইউজারনেমটি ইতিমধ্যে ব্যবহৃত হচ্ছে।' });
         const user = await User.create({ username, password });
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-        // নতুন: রেজিস্ট্রেশনের সময় ইউজারের রোল পাঠানো হচ্ছে
-        res.status(201).json({ message: 'সফলভাবে নিবন্ধিত হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status, role: user.role });
+        console.log(`DEBUG index.js: User registered - ${user.username}, Role: ${user.role}`); // ডিবাগ লগ
+        res.status(201).json({ message: 'সফলভাবে নিবন্ধিত হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status, role: user.role, type: 'registered' });
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({ message: 'সার্ভার ত্রুটি।' });
+        res.status(500).json({ message: error.message || 'সার্ভার ত্রুটি।' });
     }
 });
 
-// লগইন রুট
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ message: 'অনুগ্রহ করে ইউজারনেম এবং পাসওয়ার্ড দিন।' });
@@ -89,15 +86,14 @@ app.post('/api/login', async (req, res) => {
         const user = await User.findOne({ username });
         if (!user || !(await user.matchPassword(password))) return res.status(401).json({ message: 'অবৈধ ইউজারনেম বা পাসওয়ার্ড।' });
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-        // নতুন: লগইনের সময় ইউজারের রোল পাঠানো হচ্ছে
-        res.status(200).json({ message: 'সফলভাবে লগইন হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status, role: user.role });
+        console.log(`DEBUG index.js: User logged in - ${user.username}, Role: ${user.role}`); // ডিবাগ লগ
+        res.status(200).json({ message: 'সফলভাবে লগইন হয়েছে!', token, username: user.username, userId: user._id, avatar: user.avatar, status: user.status, role: user.role, type: 'registered' });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ message: 'সার্ভার ত্রুটি।' });
+        res.status(500).json({ message: error.message || 'সার্ভার ত্রুটি।' });
     }
 });
 
-// অ্যাভাটার পরিবর্তন হ্যান্ডেল করার রুট
 app.post('/api/user/avatar', protect, async (req, res) => {
     try {
         const { avatar } = req.body;
@@ -124,13 +120,13 @@ app.post('/api/user/avatar', protect, async (req, res) => {
         } else {
             res.status(404).json({ message: 'User not found' });
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Avatar update error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// স্ট্যাটাস পরিবর্তন হ্যান্ডেল করার রুট
 app.post('/api/user/status', protect, async (req, res) => {
     try {
         const { status } = req.body;
@@ -147,7 +143,6 @@ app.post('/api/user/status', protect, async (req, res) => {
     }
 });
 
-// ইউজারের প্রোফাইল তথ্য আনার রুট
 app.get('/api/user/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
@@ -157,7 +152,7 @@ app.get('/api/user/:userId', async (req, res) => {
                 username: `Guest-${userId.substring(6, 10)}`,
                 avatar: 'avatars/avatar1.png',
                 status: 'আমি একজন অতিথি ব্যবহারকারী।',
-                role: 'user' // গেস্ট ব্যবহারকারীদের জন্য ডিফল্ট রোল
+                role: 'user'
             };
             return res.json(guestProfile);
         }
@@ -197,11 +192,11 @@ io.on('connection', (socket) => {
                         socket.username = authUser.username;
                         socket.avatar = authUser.avatar;
                         socket.status = authUser.status;
-                        socket.role = authUser.role; // নতুন: অথেনটিকেশনের সময় ইউজারের রোল সকেটে সেট করা
+                        socket.role = authUser.role; // গ্লোবাল রোল সেট
                         authType = 'registered';
                     }
                 } catch (jwtErr) {
-                    console.warn('JWT verification failed, treating as guest.');
+                    console.warn('JWT verification failed, treating as guest.', jwtErr.message); // ডিবাগ লগ
                 }
             }
             
@@ -213,13 +208,17 @@ io.on('connection', (socket) => {
                 socket.role = 'user'; // গেস্ট ইউজারের জন্য ডিফল্ট রোল
             }
 
+            // অনলাইন ইউজারের ম্যাপে রোল ও টাইপ যোগ করা হয়েছে
             onlineUsers.set(socket.id, {
                 userId: socket.userId,
                 username: socket.username,
                 avatar: socket.avatar,
-                role: socket.role // নতুন: অনলাইন ইউজারের ম্যাপে রোল যোগ করা
+                role: socket.role,
+                type: authType
             });
             
+            // io.emit করার আগে, ম্যাপের বর্তমান অবস্থা লগ করুন
+            console.log("DEBUG index.js: Online users map before emit:", Array.from(onlineUsers.values())); // ডিবাগ লগ
             io.emit('online users list', Array.from(onlineUsers.values()));
 
             callback({
@@ -229,8 +228,10 @@ io.on('connection', (socket) => {
                 userId: socket.userId,
                 avatar: socket.avatar,
                 status: socket.status,
-                role: socket.role // নতুন: অথেনটিকেশন কলব্যাকে রোল পাঠানো
+                role: socket.role
             });
+            console.log(`DEBUG index.js: User ${socket.username} authenticated as ${authType} with role ${socket.role}`);
+
         } catch (err) {
             console.error('Socket authentication error:', err);
             callback({ success: false, message: 'অথেন্টিকেশন ব্যর্থ হয়েছে।' });
@@ -239,23 +240,43 @@ io.on('connection', (socket) => {
 
     socket.on('join room', async (roomCode) => {
         if (!socket.userId) return;
+
         Array.from(socket.rooms).forEach(r => { if (r !== socket.id) socket.leave(r); });
         socket.join(roomCode);
+        
         io.to(roomCode).emit('user joined', `${socket.username} ${roomCode === 'public' ? 'পাবলিক চ্যাটে' : 'রুমে'} যোগ দিয়েছে!`);
+        
         try {
             const previousMessages = await Message.find({ room: roomCode })
                                                 .sort({ createdAt: -1 })
                                                 .limit(MESSAGES_PER_PAGE);
             socket.emit('previous messages', previousMessages.reverse());
+
+            if (roomCode !== 'public') {
+                const roomData = await Room.findOne({ name: roomCode });
+                if (roomData) {
+                    const member = roomData.members.find(m => m.userId.toString() === socket.userId);
+                    const roomRole = member ? member.role : 'room_member'; // যদি সদস্য না থাকে, ডিফল্ট 'room_member'
+                    socket.emit('room role updated', { roomCode: roomCode, role: roomRole });
+                    console.log(`DEBUG index.js: User ${socket.username} joined room ${roomCode} with room role ${roomRole}`);
+                } else {
+                    // যদি রুম মডেলে রুম না পাওয়া যায়, ডিফল্ট রোল
+                    socket.emit('room role updated', { roomCode: roomCode, role: 'room_member' });
+                    console.log(`DEBUG index.js: User ${socket.username} joined non-existent room ${roomCode} (in Room model), set default role.`);
+                }
+            } else {
+                socket.emit('room role updated', { roomCode: 'public', role: 'room_member' });
+                console.log(`DEBUG index.js: User ${socket.username} joined public room, set default role.`);
+            }
+
         } catch (err) {
-            console.error('Error fetching initial messages:', err);
+            console.error('Error fetching initial messages or room data:', err);
         }
     });
 
-    // রুম বিদ্যমান কিনা চেক করার জন্য
     socket.on('check room existence', async (roomCode, callback) => {
         try {
-            const roomExists = await Message.exists({ room: roomCode });
+            const roomExists = await Room.exists({ name: roomCode }); // Room মডেলে রুমটি বিদ্যমান কিনা চেক করা হচ্ছে
             callback(roomExists);
         } catch (error) {
             console.error('Error checking room existence:', error);
@@ -263,17 +284,31 @@ io.on('connection', (socket) => {
         }
     });
 
-    // নতুন প্রাইভেট রুম তৈরি করার জন্য
-    socket.on('create private room', async (roomCode, username, callback) => {
+    socket.on('create private room', async (data, callback) => {
+        const { roomCode, userId, globalRole } = data; // ক্লায়েন্ট থেকে userId এবং globalRole গ্রহণ
+        
+        const user = await User.findById(userId);
+        if (!user) {
+            return callback({ success: false, message: 'রুম তৈরি করতে লগইন করুন।' });
+        }
+
         try {
-            const roomExists = await Message.exists({ room: roomCode });
+            const roomExists = await Room.exists({ name: roomCode });
             if (roomExists) {
                 return callback({ success: false, message: 'এই প্রাইভেট রুম কোডটি ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ব্যবহার করুন।' });
             }
 
+            const newRoom = new Room({
+                name: roomCode,
+                creator: userId,
+                type: 'private',
+                members: [{ userId: userId, role: 'room_admin' }] // রুম তৈরি করা ইউজার room_admin
+            });
+            await newRoom.save();
+
             const welcomeMessage = new Message({
                 username: "System",
-                message: `${username} একটি নতুন প্রাইভেট রুম "${roomCode}" তৈরি করেছে!`,
+                message: `${user.username} একটি নতুন প্রাইভেট রুম "${roomCode}" তৈরি করেছে!`,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 room: roomCode,
                 userId: "system-message",
@@ -281,10 +316,11 @@ io.on('connection', (socket) => {
                 isGuest: false
             });
             await welcomeMessage.save();
+            console.log(`DEBUG index.js: Room ${roomCode} created by ${user.username}. Added as room_admin.`);
             callback({ success: true, message: 'সফলভাবে নতুন প্রাইভেট রুম তৈরি হয়েছে!' });
         } catch (error) {
             console.error('Error creating private room:', error);
-            callback({ success: false, message: 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
+            callback({ success: false, message: error.message || 'রুম তৈরি করতে সার্ভার ত্রুটি হয়েছে।' });
         }
     });
 
@@ -369,7 +405,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // নতুন Socket.IO ইভেন্ট: পুরোনো মেসেজ লোড করার জন্য
     socket.on('fetch older messages', async ({ roomCode, lastMessageId }) => {
         try {
             const query = { room: roomCode };
@@ -408,22 +443,39 @@ io.on('connection', (socket) => {
         }
     });
 
-    // আপডেট করা হয়েছে: মেসেজ ডিলিট লজিক (রোল চেক সহ)
     socket.on('delete message', async ({ messageId }) => {
         try {
             const message = await Message.findById(messageId);
             if (!message) return;
 
-            // যদি মেসেজটি নিজের হয় OR অনুরোধকারীর রোল অ্যাডমিন/মডারেটর হয়
-            if (message.userId === socket.userId || socket.role === 'admin' || socket.role === 'moderator') {
-                // শুধুমাত্র মেসেজ টেক্সট পরিবর্তন করুন, পুরোপুরি মুছবেন না
+            if (message.userId === socket.userId) {
+                message.message = 'এই মেসেজটি মুছে ফেলা হয়েছে।';
+                message.isEdited = true;
+                await message.save();
+                io.to(message.room).emit('message edited', { messageId: message._id, newMessageText: message.message });
+                return;
+            }
+
+            const isGlobalAdminOrMod = (socket.role === 'admin' || socket.role === 'moderator');
+            let isRoomAdminOrMod = false;
+
+            if (message.room !== 'public') {
+                const roomData = await Room.findOne({ name: message.room });
+                if (roomData) {
+                    const member = roomData.members.find(m => m.userId.toString() === socket.userId);
+                    if (member && (member.role === 'room_admin' || member.role === 'room_moderator')) {
+                        isRoomAdminOrMod = true;
+                    }
+                }
+            }
+
+            if (isGlobalAdminOrMod || isRoomAdminOrMod) {
                 message.message = 'এই মেসেজটি মুছে ফেলা হয়েছে।';
                 message.isEdited = true;
                 await message.save();
                 io.to(message.room).emit('message edited', { messageId: message._id, newMessageText: message.message });
             } else {
-                console.log(`User ${socket.username} (Role: ${socket.role}) attempted to delete message ${messageId} but is not authorized.`);
-                // ক্লায়েন্টকে একটি এরর নোটিফিকেশন পাঠাতে পারেন
+                console.log(`DEBUG index.js: Delete failed: User ${socket.username} (Global Role: ${socket.role}) attempted to delete message ${messageId}. Global Admin/Mod: ${isGlobalAdminOrMod}, Room Admin/Mod: ${isRoomAdminOrMod}`);
                 socket.emit('notification', { message: 'এই মেসেজটি ডিলিট করার অনুমতি আপনার নেই।', type: 'error' });
             }
         } catch (err) {
@@ -440,35 +492,66 @@ io.on('connection', (socket) => {
                 message.isEdited = true;
                 await message.save();
                 io.to(message.room).emit('message edited', { messageId: message._id, newMessageText: message.message });
+            } else {
+                socket.emit('notification', { message: 'আপনি এই মেসেজটি সম্পাদনা করতে পারবেন না।', type: 'error' });
             }
-        } catch (err) { console.error('Error editing message:', err); }
+        } catch (err) {
+            console.error('Error editing message:', err);
+            socket.emit('notification', { message: 'মেসেজ সম্পাদনা করতে সমস্যা হয়েছে।', type: 'error' });
+        }
     });
     
     socket.on('clear room chat', async ({ roomCode }) => {
         try {
-            // রুমের চ্যাট পরিষ্কার করার জন্য অ্যাডমিন/মডারেটর রোল চেক
-            if (socket.role !== 'admin' && socket.role !== 'moderator') {
-                socket.emit('notification', { message: 'চ্যাট পরিষ্কার করার অনুমতি আপনার নেই।', type: 'error' });
-                return;
+            const isGlobalAdminOrMod = (socket.role === 'admin' || socket.role === 'moderator');
+            let isRoomAdminOrMod = false;
+
+            if (roomCode !== 'public') {
+                const roomData = await Room.findOne({ name: roomCode });
+                if (roomData) {
+                    const member = roomData.members.find(m => m.userId.toString() === socket.userId);
+                    if (member && (member.role === 'room_admin' || member.role === 'room_moderator')) {
+                        isRoomAdminOrMod = true;
+                    }
+                }
             }
-            await Message.deleteMany({ room: roomCode });
-            io.to(roomCode).emit('chat cleared');
-            io.to(roomCode).emit('notification', { message: `${socket.username} দ্বারা চ্যাট পরিষ্কার করা হয়েছে।`, type: 'info' });
+
+            if (isGlobalAdminOrMod || isRoomAdminOrMod) {
+                await Message.deleteMany({ room: roomCode });
+                io.to(roomCode).emit('chat cleared');
+                io.to(roomCode).emit('notification', { message: `${socket.username} দ্বারা চ্যাট পরিষ্কার করা হয়েছে।`, type: 'info' });
+            } else {
+                console.log(`DEBUG index.js: Clear chat failed: User ${socket.username} (Global Role: ${socket.role}). Global Admin/Mod: ${isGlobalAdminOrMod}, Room Admin/Mod: ${isRoomAdminOrMod}`);
+                socket.emit('notification', { message: 'চ্যাট পরিষ্কার করার অনুমতি আপনার নেই।', type: 'error' });
+            }
         } catch (err) {
             console.error('Error clearing chat:', err);
             socket.emit('notification', { message: 'চ্যাট পরিষ্কার করতে সমস্যা হয়েছে।', type: 'error' });
         }
     });
 
-    // নতুন: ব্যবহারকারীকে রুম থেকে বের করে দেওয়ার ইভেন্ট (শুধুমাত্র অ্যাডমিন/মডারেটরদের জন্য)
     socket.on('kick user from room', async ({ targetUserId, roomCode }) => {
-        // অনুরোধকারী ইউজারের রোল চেক করা
-        if (socket.role !== 'admin' && socket.role !== 'moderator') {
+        const isGlobalAdminOrMod = (socket.role === 'admin' || socket.role === 'moderator');
+        let isRoomAdminOrMod = false;
+
+        if (roomCode !== 'public') {
+            const roomData = await Room.findOne({ name: roomCode });
+            if (roomData) {
+                const member = roomData.members.find(m => m.userId.toString() === socket.userId);
+                if (member && (member.role === 'room_admin' || member.role === 'room_moderator')) {
+                    isRoomAdminOrMod = true;
+                }
+            }
+        }
+
+        console.log(`DEBUG index.js: Kick attempt by ${socket.username} (ID: ${socket.userId}, Global Role: ${socket.role}) for ${targetUserId} in room ${roomCode}.`);
+        console.log(`DEBUG index.js: Is global admin/mod? ${isGlobalAdminOrMod}. Is room admin/mod? ${isRoomAdminOrMod}.`);
+
+        if (!isGlobalAdminOrMod && !isRoomAdminOrMod) {
             socket.emit('notification', { message: 'এই কাজটি করার অনুমতি আপনার নেই।', type: 'error' });
             return;
         }
 
-        // নিজের আইডি দিয়ে নিজেকে কিক করা যাবে না
         if (socket.userId === targetUserId) {
             socket.emit('notification', { message: 'আপনি নিজেকে রুম থেকে বের করতে পারবেন না।', type: 'error' });
             return;
@@ -476,24 +559,27 @@ io.on('connection', (socket) => {
 
         let targetSocketId = null;
         let targetUsername = '';
+        let foundTargetSocket = false;
         for (let [id, s] of io.of('/').sockets) {
             if (s.userId === targetUserId && s.rooms.has(roomCode)) {
                 targetSocketId = id;
                 targetUsername = s.username;
+                foundTargetSocket = true;
                 break;
             }
         }
 
-        if (targetSocketId) {
+        if (foundTargetSocket && targetSocketId) {
             const targetSocket = io.of('/').sockets.get(targetSocketId);
             targetSocket.leave(roomCode);
-            targetSocket.emit('notification', { message: `আপনাকে ${roomCode} রুম থেকে বের করে দেওয়া হয়েছে।`, type: 'error' }); // Error type for more visual emphasis
+            targetSocket.emit('notification', { message: `আপনাকে ${roomCode} রুম থেকে বের করে দেওয়া হয়েছে।`, type: 'error' });
             targetSocket.emit('user kicked', { roomCode: roomCode, message: `আপনাকে ${roomCode} রুম থেকে বের করে দেওয়া হয়েছে।` });
             
             io.to(roomCode).emit('user left', `${targetUsername} কে ${roomCode} রুম থেকে বের করে দেওয়া হয়েছে।`);
             socket.emit('notification', { message: `${targetUsername} কে রুম থেকে বের করা সফল হয়েছে।`, type: 'success' });
-            console.log(`User ${targetUsername} (ID: ${targetUserId}) kicked from room ${roomCode} by ${socket.username}`);
+            console.log(`DEBUG index.js: User ${targetUsername} (ID: ${targetUserId}) kicked from room ${roomCode} by ${socket.username}`);
         } else {
+            console.log(`DEBUG index.js: Target user ${targetUserId} not found in room ${roomCode} or not online.`);
             socket.emit('notification', { message: 'ব্যবহারকারীটি এই রুমে নেই বা পাওয়া যায়নি।', type: 'error' });
         }
     });

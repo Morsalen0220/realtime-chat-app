@@ -58,8 +58,9 @@ body.dark-theme #loginBtn, body.dark-theme #registerBtn, body.dark-theme #guestB
                 -3px -3px 6px rgba(74, 85, 104, 0.6);
 }
 body.dark-theme #loginBtn:hover, body.dark-theme #registerBtn:hover, body.dark-theme #guestBtn:hover {
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6),
-                inset -2px -2px 5px rgba(74, 85, 104, 0.8);
+    background-color: #0056b3;
+    box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
 
 body.dark-theme .auth-box p, body.dark-theme .auth-box a {
@@ -456,17 +457,17 @@ body.dark-theme .ephemeral-duration-modal .duration-choice.off-option:hover {
 
 /* অনলাইন ইউজারের পাশে কিক বাটনের জন্য স্টাইল */
 .online-user .kick-user-btn {
-    background-color: #dc3545; /* লাল রঙ */
+    background-color: #dc3545;
     color: white;
     border: none;
-    padding: 3px 8px; /* ছোট প্যাডিং */
+    padding: 3px 8px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 0.75em; /* ছোট ফন্ট */
-    margin-left: auto; /* ডানদিকে সরানোর জন্য */
+    font-size: 0.75em;
+    margin-left: auto;
     opacity: 0.8;
     transition: opacity 0.2s ease, background-color 0.2s ease;
-    flex-shrink: 0; /* যেন ছোট না হয় */
+    flex-shrink: 0;
 }
 
 .online-user .kick-user-btn:hover {
@@ -864,8 +865,8 @@ body.dark-theme .online-user .kick-user-btn:hover {
     margin-top: 20px;
 }
 .avatar-choice {
-    width: 65px; /* এখানে আপনার পছন্দ অনুযায়ী 65px করা হয়েছে */
-    height: 65px; /* এখানে আপনার পছন্দ অনুযায়ী 65px করা হয়েছে */
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
@@ -1187,7 +1188,7 @@ body.dark-theme .message.ephemeral .message-content {
         transform: translateX(0);
     }
 
-    /* হ্যামবার্গার মেনু এবং অনলাইন ইউজারের সংখ্যা ডিসপ্লে */
+    /* হ্যামবার্গার মেনু শুধুমাত্র মোবাইলে দেখানোর জন্য */
     #hamburger-menu {
         display: block;
         margin-right: 10px;
