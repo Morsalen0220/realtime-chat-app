@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রোফাইল</title>
+    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="profile.css"> 
+</head>
+<body class="profile-page-body">
+    <div id="notification-container"></div>
+
+    <div class="profile-container">
+        <button class="back-to-chat-btn" onclick="window.location.href='/';">← চ্যাটে ফিরে যান</button>
+
+        <div class="profile-cover-section">
+            <img id="profileCoverPhoto" src="images/default_cover.jpg" alt="Cover Photo" class="profile-cover-photo">
+            <div class="profile-avatar-overlay">
+                <img id="profilePageAvatar" src="avatars/avatar1.png" alt="User Avatar" class="profile-page-avatar">
+            </div>
+            </div>
+
+        <div class="profile-info-section">
+            <h1 id="profilePageUsername" class="profile-page-username">লোডিং...</h1>
+            <p id="profilePageStatus" class="profile-page-status">স্ট্যাটাস লোড হচ্ছে...</p>
+            <div class="profile-meta-details">
+                <p>সদস্য হয়েছে: <span id="profilePageJoinedDate"></span></p>
+                <p>রোল: <span id="profilePageRole"></span></p>
+                <p>ইউজার আইডি: <span id="profilePageUserId"></span></p> </div>
+            <div class="profile-action-buttons">
+                <button id="editProfileBtn" class="action-btn primary-btn" style="display: none;">প্রোফাইল এডিট করুন</button>
+                <button id="sendMessageBtn" class="action-btn secondary-btn" style="display: none;">মেসেজ পাঠান</button>
+                <button id="kickUserFromProfilePageBtn" class="action-btn confirm-btn" style="display:none;">এই ইউজারকে কিক করুন</button>
+            </div>
+        </div>
+
+        <div id="myProfileEditSection" style="display: none;" class="profile-edit-section">
+            <h2>আপনার প্রোফাইল এডিট করুন</h2>
+            <div class="avatar-options-profile-page">
+                <p>আপনার অ্যাভাটার পরিবর্তন করুন:</p>
+                <div class="avatar-choices">
+                    <img src="avatars/avatar1.png" class="avatar-choice-profile-page" data-avatar="avatars/avatar1.png" alt="Avatar 1">
+                    <img src="avatars/avatar2.png" class="avatar-choice-profile-page" data-avatar="avatars/avatar2.png" alt="Avatar 2">
+                    <img src="avatars/avatar3.png" class="avatar-choice-profile-page" data-avatar="avatars/avatar3.png" alt="Avatar 3">
+                    <img src="avatars/avatar4.png" class="avatar-choice-profile-page" data-avatar="avatars/avatar4.png" alt="Avatar 4">
+                </div>
+            </div>
+            <div class="status-update-profile-page">
+                <p>আপনার স্ট্যাটাস পরিবর্তন করুন:</p>
+                <textarea id="profilePageStatusInput" rows="3" maxlength="150" placeholder="নতুন স্ট্যাটাস লিখুন..."></textarea>
+                <button id="profilePageSaveStatusBtn">স্ট্যাটাস সেভ করুন</button>
+            </div>
+            <div class="theme-selection-section">
+                <p>থিম পরিবর্তন করুন:</p>
+                <div class="theme-toggle-switch">
+                    <input type="checkbox" id="darkModeToggleProfilePage" class="toggle-checkbox">
+                    <label for="darkModeToggleProfilePage" class="toggle-label">
+                        <span class="toggle-inner"></span>
+                        <span class="toggle-switch"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content-feed">
+            <h3>সাম্প্রতিক অ্যাক্টিভিটি</h3>
+            <div class="activity-item">
+                <p>নতুন প্রোফাইল স্ট্যাটাস সেট করেছেন: "নতুন স্ট্যাটাস"</p>
+                <small>২ ঘণ্টা আগে</small>
+            </div>
+            <div class="activity-item">
+                <p>একটি নতুন প্রাইভেট রুম তৈরি করেছেন: "MySecretChat"</p>
+                <small>১ দিন আগে</small>
+            </div>
+            </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>

@@ -1,5 +1,4 @@
-// models/Room.js
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // Add this line
 
 const RoomSchema = new mongoose.Schema({
     name: { 
@@ -7,7 +6,7 @@ const RoomSchema = new mongoose.Schema({
         required: true, 
         unique: true, 
         trim: true,
-        minlength: 3 // রুমের নামের সর্বনিম্ন দৈর্ঘ্য
+        minlength: 3 
     },
     creator: { 
         type: mongoose.Schema.Types.ObjectId, 
@@ -16,10 +15,10 @@ const RoomSchema = new mongoose.Schema({
     },
     type: { 
         type: String, 
-        enum: ['public', 'private'], 
+        enum: ['public', 'private', 'private_one_to_one'], // 'private_one_to_one' যোগ করা হয়েছে
         default: 'private' 
     },
-    members: [{ // রুমের মেম্বারদের তালিকা এবং তাদের রোল
+    members: [{ 
         userId: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'User', 
@@ -30,7 +29,7 @@ const RoomSchema = new mongoose.Schema({
             enum: ['room_member', 'room_moderator', 'room_admin'], 
             default: 'room_member' 
         },
-        _id: false // MongoDB যেন স্বয়ংক্রিয়ভাবে _id যোগ না করে প্রতিটি সদস্যের জন্য
+        _id: false 
     }],
     createdAt: { 
         type: Date, 

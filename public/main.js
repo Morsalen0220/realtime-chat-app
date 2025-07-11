@@ -64,18 +64,8 @@ const UI_ELEMENTS = {
     hamburgerMenu: document.getElementById('hamburger-menu'),
     menuOverlay: document.getElementById('menu-overlay'),
     sidebar: document.getElementById('sidebar'),
-    profileModal: document.getElementById('profile-modal'),
-    profileModalCloseBtn: document.querySelector('#profile-modal .close-button'),
-    avatarOptions: document.querySelector('.avatar-options'),
     userProfileInfo: document.getElementById('user-profile-info'),
     userAvatarTop: document.getElementById('user-avatar-top'),
-    statusInput: document.getElementById('status-input'),
-    saveStatusBtn: document.getElementById('save-status-btn'),
-    viewProfileModal: document.getElementById('view-profile-modal'),
-    viewProfileModalCloseBtn: document.querySelector('#view-profile-modal .close-button'),
-    profileViewAvatar: document.getElementById('profile-view-avatar'),
-    profileViewUsername: document.getElementById('profile-view-username'),
-    profileViewStatus: document.getElementById('profile-view-status'),
     
     deleteConfirmationModal: document.getElementById('delete-confirmation-modal'),
     deleteModalCloseButton: document.getElementById('deleteModalCloseButton'),
@@ -89,20 +79,18 @@ const UI_ELEMENTS = {
     ephemeralDurationModal: document.getElementById('ephemeral-duration-modal'),
     ephemeralModalCloseButton: document.getElementById('ephemeralModalCloseButton'),
     durationChoices: document.querySelector('#ephemeral-duration-modal .duration-options'),
-
-    kickUserFromProfileBtn: document.getElementById('kickUserFromProfileBtn')
 };
 
 let username = '';
 let currentRoom = '';
-let userType = 'guest'; // This will be updated on auth
+let userType = 'guest'; 
 let hasMoreMessages = true;
 let fetchingOlderMessages = false;
 let lastFetchedMessageId = null;
 let isEphemeralModeActive = false;
 let selectedEphemeralDuration = null;
 
-let currentRoomUserRole = 'room_member'; // Default to member
+let currentRoomUserRole = 'room_member'; 
 
 
 const emojiBtn = document.getElementById('emoji-btn');
@@ -145,10 +133,8 @@ function setUIState(state) {
         UI_ELEMENTS.guestBtn.style.display = 'none';
     } else if (state === 'chat') {
         UI_ELEMENTS.mainChatContent.style.display = 'flex';
-        // Ensure username is updated for display
         UI_ELEMENTS.loggedInUserInfo.textContent = `${localStorage.getItem('username') || 'Guest'}`;
 
-        // Control visibility of logout/register buttons based on current userType
         const currentUserType = localStorage.getItem('userType');
         if (UI_ELEMENTS.logoutBtn) UI_ELEMENTS.logoutBtn.style.display = currentUserType === 'registered' ? 'block' : 'none';
         if (UI_ELEMENTS.registerAsUserBtn) UI_ELEMENTS.registerAsUserBtn.style.display = currentUserType === 'guest' ? 'block' : 'none';
@@ -158,7 +144,7 @@ function setUIState(state) {
     }
 }
 
-async function apiRequest(endpoint, body) {
+async function apiRequest(endpoint, body, method = 'POST') {
     try {
         const token = localStorage.getItem('token');
         const headers = { 'Content-Type': 'application/json' };
@@ -166,7 +152,7 @@ async function apiRequest(endpoint, body) {
             headers['Authorization'] = `Bearer ${token}`;
         }
         const res = await fetch(endpoint, {
-            method: 'POST',
+            method: method,
             headers: headers,
             body: JSON.stringify(body)
         });
@@ -278,60 +264,16 @@ if (UI_ELEMENTS.clearChatBtn) UI_ELEMENTS.clearChatBtn.addEventListener('click',
     }
 });
 
+// প্রোফাইল মোডাল খোলার লজিকটি সরানো হয়েছে, এখন এটি সরাসরি প্রোফাইল পেজে রিডাইরেক্ট করবে
 if (UI_ELEMENTS.userProfileInfo) UI_ELEMENTS.userProfileInfo.addEventListener('click', () => {
-    UI_ELEMENTS.statusInput.value = localStorage.getItem('status') || '';
-    if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'flex';
-});
-
-if (UI_ELEMENTS.profileModalCloseBtn) UI_ELEMENTS.profileModalCloseBtn.addEventListener('click', () => {
-    if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'none';
-});
-
-if (UI_ELEMENTS.avatarOptions) UI_ELEMENTS.avatarOptions.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('avatar-choice')) {
-        const newAvatar = e.target.dataset.avatar;
-        if (localStorage.getItem('userType') !== 'registered') {
-            showNotification('অ্যাভাটার পরিবর্তন করতে হলে আপনাকে রেজিস্টার করতে হবে।', 'error');
-            return;
-        }
-
-        const { ok, data } = await apiRequest('/api/user/avatar', { avatar: newAvatar });
-        if (ok) {
-            localStorage.setItem('avatar', data.avatar);
-            if (UI_ELEMENTS.userAvatarTop) UI_ELEMENTS.userAvatarTop.src = data.avatar;
-            showNotification('অ্যাভাটার পরিবর্তিত হয়েছে!', 'success'); 
-        } else {
-            showNotification(`অ্যাভাটার পরিবর্তন সমস্যা: ${data.message}`, 'error'); 
-        }
-    }
-});
-
-if (UI_ELEMENTS.saveStatusBtn) UI_ELEMENTS.saveStatusBtn.addEventListener('click', async () => {
-    const newStatus = UI_ELEMENTS.statusInput.value.trim();
-    if (!newStatus) return showNotification('স্ট্যাটাস খালি যাবে না।', 'error'); 
-    
-    if (localStorage.getItem('userType') !== 'registered') {
-        showNotification('স্ট্যাটাস পরিবর্তন করতে হলে আপনাকে রেজিস্টার করতে হবে।', 'error');
-        return;
-    }
-
-    if (UI_ELEMENTS.saveStatusBtn) {
-        UI_ELEMENTS.saveStatusBtn.disabled = true;
-        UI_ELEMENTS.saveStatusBtn.textContent = 'সেভ হচ্ছে...'; 
-    }
-    const { ok, data } = await apiRequest('/api/user/status', { status: newStatus });
-    if (ok) {
-        localStorage.setItem('status', data.status);
-        showNotification('স্ট্যাটাস আপডেট সফল!', 'success'); 
-        if (UI_ELEMENTS.profileModal) UI_ELEMENTS.profileModal.style.display = 'none';
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+        window.location.href = `/profile?id=${userId}`; // নিজের প্রোফাইল পেজে রিডাইরেক্ট
     } else {
-        showNotification(`স্ট্যাটাস আপডেট সমস্যা: ${data.message}`, 'error'); 
-    }
-    if (UI_ELEMENTS.saveStatusBtn) {
-        UI_ELEMENTS.saveStatusBtn.disabled = false;
-        UI_ELEMENTS.saveStatusBtn.textContent = 'সেভ করুন';
+        showNotification('আপনার প্রোফাইল আইডি খুঁজে পাওয়া যায়নি।', 'error');
     }
 });
+
 
 function displayMessage(data, prepend = false) {
     const item = document.createElement('li');
@@ -422,13 +364,10 @@ function displayMessage(data, prepend = false) {
     }
 }
 
-// Updated joinRoom function to store last room and handle roomCodeInput
-// main.js - joinRoom ফাংশন
 function joinRoom(roomName) {
     currentRoom = roomName;
-    currentRoomUserRole = 'room_member'; // Default to room_member
+    currentRoomUserRole = 'room_member';
 
-    // **এই ব্লকটি এখন সবচেয়ে উপরে নিয়ে আসা হয়েছে যাতে currentRoomDisplayTop দ্রুত আপডেট হয়**
     if (UI_ELEMENTS.currentRoomDisplayTop) {
         UI_ELEMENTS.currentRoomDisplayTop.textContent = `আপনি ${currentRoom === 'public' ? 'পাবলিক চ্যাটে' : currentRoom + ' রুমে'} আছেন`;
     }
@@ -437,36 +376,35 @@ function joinRoom(roomName) {
         UI_ELEMENTS.messages.innerHTML = '';
     }
     socket.emit('join room', currentRoom);
-    localStorage.setItem('lastRoom', roomName); // Save the last joined room
+    localStorage.setItem('lastRoom', roomName); 
     if (roomName !== 'public') {
-        localStorage.setItem('savedPrivateCode', roomName); // Private room code saving
+        localStorage.setItem('savedPrivateCode', roomName); 
         addRoomToSavedList(roomName);
     } else {
-        localStorage.removeItem('savedPrivateCode'); // পাবলিক রুমে গেলে সেভড প্রাইভেট কোড মুছে ফেলুন
+        localStorage.removeItem('savedPrivateCode');
     }
 
     if (UI_ELEMENTS.roomsModal) {
         UI_ELEMENTS.roomsModal.style.display = 'none';
     }
 
-    // Update active room buttons and roomCodeInput visibility/value
     if (UI_ELEMENTS.privateChatBtn) {
         UI_ELEMENTS.privateChatBtn.classList.remove('active'); 
     }
     if (UI_ELEMENTS.publicChatBtn) {
         UI_ELEMENTS.publicChatBtn.classList.remove('active'); 
     }
-    if (roomName === 'public') { // If joining public room
+    if (roomName === 'public') { 
         if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.classList.add('active');
         if (UI_ELEMENTS.roomCodeInput) {
-            UI_ELEMENTS.roomCodeInput.value = ''; // Public room: clear input
-            UI_ELEMENTS.privateCodeSection.style.display = 'none'; // Public room: hide private section
+            UI_ELEMENTS.roomCodeInput.value = ''; 
+            UI_ELEMENTS.privateCodeSection.style.display = 'none';
         }
-    } else { // If joining a private room
+    } else { 
         if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.classList.add('active');
         if (UI_ELEMENTS.roomCodeInput) {
-            UI_ELEMENTS.roomCodeInput.value = roomName; // Private room: load the current roomName
-            UI_ELEMENTS.privateCodeSection.style.display = 'flex'; // Private room: show private section
+            UI_ELEMENTS.roomCodeInput.value = roomName; 
+            UI_ELEMENTS.privateCodeSection.style.display = 'flex';
         }
     }
     hasMoreMessages = true;
@@ -509,23 +447,29 @@ function authenticateSocket(guestId = null) {
             
             setUIState('chat');
             
-            // Restore last room or default to public
             const lastRoom = localStorage.getItem('lastRoom') || 'public';
             joinRoom(lastRoom); 
-            
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialRoom = urlParams.get('room');
+
+            if (initialRoom) {
+                joinRoom(initialRoom); // যদি URL এ রুম থাকে, সেই রুমে জয়েন করো
+                // URL থেকে রুম প্যারামিটার সরিয়ে ফেলা, যাতে রিফ্রেশ করলে আবার এই রুমে না যায় (ঐচ্ছিক)
+                history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                // যদি URL এ রুম না থাকে, তাহলে lastRoom বা ডিফল্ট 'public' রুমে জয়েন করো
+                const lastRoom = localStorage.getItem('lastRoom') || 'public';
+                joinRoom(lastRoom); 
+            }
             renderSavedRooms();
             
-            // Restore theme on load
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-theme');
-                UI_ELEMENTS.darkModeToggle.checked = true;
             } else {
                 document.body.classList.remove('dark-theme');
-                UI_ELEMENTS.darkModeToggle.checked = false;
             }
 
-            // Restore avatar on load
             const savedAvatar = localStorage.getItem('avatar');
             if (savedAvatar && UI_ELEMENTS.userAvatarTop) {
                 UI_ELEMENTS.userAvatarTop.src = savedAvatar;
@@ -580,6 +524,7 @@ window.addEventListener('load', () => {
         setUIState('login');
     }
 
+    // অনলাইন ইউজারের লিস্টে ক্লিক হ্যান্ডেল করা (সাইডবার)
     if (UI_ELEMENTS.onlineUsersList) {
         UI_ELEMENTS.onlineUsersList.addEventListener('click', (e) => {
             const targetUserElement = e.target.closest('.online-user');
@@ -598,22 +543,25 @@ window.addEventListener('load', () => {
         console.error("ইউজার লিস্ট পাওয়া যায়নি।"); 
     }
 
+    // চ্যাট মেসেজের অ্যাভাতারে ক্লিক হ্যান্ডেল করা
     if (UI_ELEMENTS.messages) {
+        UI_ELEMENTS.messages.addEventListener('click', (e) => {
+            const avatarElement = e.target.closest('.chat-avatar');
+            if (avatarElement) {
+                const userId = avatarElement.dataset.userId;
+                if (userId) {
+                    showUserProfile(userId); // প্রোফাইল দেখানোর ফাংশন কল
+                } else {
+                    console.warn("অ্যাভাটারে ইউজার আইডি পাওয়া যায়নি।");
+                }
+            }
+            // ... অন্যান্য মেসেজ-সম্পর্কিত ক্লিক লজিক যেমন রিয়্যাকশন, এডিট, ডিলিট
+        });
+
+        // পুরনো মেসেজ লোড করার স্ক্রল ইভেন্ট
         UI_ELEMENTS.messages.addEventListener('scroll', () => {
             if (UI_ELEMENTS.messages.scrollTop === 0 && hasMoreMessages && !fetchingOlderMessages) {
                 fetchOlderMessages();
-            }
-        });
-    }
-
-    if (UI_ELEMENTS.darkModeToggle) {
-        UI_ELEMENTS.darkModeToggle.addEventListener('change', (event) => {
-            if (event.target.checked) {
-                document.body.classList.add('dark-theme');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.body.classList.remove('dark-theme');
-                localStorage.setItem('theme', 'light');
             }
         });
     }
@@ -701,33 +649,28 @@ if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.addEventListener('click
     UI_ELEMENTS.publicChatBtn.classList.add('active');
     if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.classList.remove('active');
     if (UI_ELEMENTS.privateCodeSection) {
-        UI_ELEMENTS.privateCodeSection.style.display = 'none'; // পাবলিক বাটনে ক্লিক করলে লুকান
-        UI_ELEMENTS.roomCodeInput.value = ''; // পাবলিক বাটনে ক্লিক করলে ইনপুট খালি করুন
+        UI_ELEMENTS.privateCodeSection.style.display = 'none';
+        UI_ELEMENTS.roomCodeInput.value = '';
     }
     joinRoom('public');
 });
 
-// main.js - privateChatBtn এর click ইভেন্ট লিসেনার
 if (UI_ELEMENTS.privateChatBtn) UI_ELEMENTS.privateChatBtn.addEventListener('click', () => {
     UI_ELEMENTS.privateChatBtn.classList.add('active');
     if (UI_ELEMENTS.publicChatBtn) UI_ELEMENTS.publicChatBtn.classList.remove('active');
     
     if (UI_ELEMENTS.privateCodeSection) {
-        UI_ELEMENTS.privateCodeSection.style.display = 'flex'; // প্রাইভেট সেকশন দেখান
+        UI_ELEMENTS.privateCodeSection.style.display = 'flex';
 
         const savedPrivateCode = localStorage.getItem('savedPrivateCode');
         if (savedPrivateCode) {
             UI_ELEMENTS.roomCodeInput.value = savedPrivateCode;
-            // নতুন: যদি সেভ করা কোড থাকে, সরাসরি সেই রুমে জয়েন করার চেষ্টা করুন
-            // সার্ভারে রুমটি বিদ্যমান আছে কিনা চেক করার প্রয়োজন নেই কারণ এটি ইতিমধ্যে সেভ করা হয়েছে
-            joinRoom(savedPrivateCode); // সরাসরি রুমে জয়েন করার চেষ্টা
+            joinRoom(savedPrivateCode);
         } else {
-            // যদি কোনো সেভ করা কোড না থাকে, ইনপুট খালি রাখুন
             UI_ELEMENTS.roomCodeInput.value = '';
         }
     }
 });
-
 if (UI_ELEMENTS.joinPrivateRoomBtn) UI_ELEMENTS.joinPrivateRoomBtn.addEventListener('click', () => {
     const privateCode = UI_ELEMENTS.roomCodeInput.value.trim();
     if (!privateCode) {
@@ -796,6 +739,7 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
     const messageContent = e.target.closest('.message-content');
     const messageLi = e.target.closest('li[data-message-id]');
     
+    // Reaction palette toggle logic
     if (messageContent && !e.target.classList.contains('reaction-choice') && !e.target.closest('.message-actions')) {
         const clickedPalette = messageContent.querySelector('.reaction-palette'); 
         
@@ -810,6 +754,7 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
         }
     }
     
+    // Reaction choice click logic
     if (e.target.classList.contains('reaction-choice')) {
         const messageId = messageLi.dataset.messageId;
         const emoji = e.target.dataset.emoji;
@@ -819,6 +764,7 @@ if (UI_ELEMENTS.messages) UI_ELEMENTS.messages.addEventListener('click', (e) => 
         return;
     }
     
+    // Handle Edit/Delete buttons or other message-related clicks
     if (!messageLi) return;
     const messageId = messageLi.dataset.messageId;
     
@@ -866,40 +812,9 @@ if (UI_ELEMENTS.confirmDeleteBtn) {
 
 async function showUserProfile(userId) {
     if (!userId) return;
-    if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'flex';
-    if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'লোড হচ্ছে...'; 
-    if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = '';
-    
-    if (UI_ELEMENTS.kickUserFromProfileBtn) UI_ELEMENTS.kickUserFromProfileBtn.style.display = 'none';
-
-    try {
-        const response = await fetch(`/api/user/${userId}`);
-        const user = await response.json(); 
-        
-        const currentUserGlobalRole = localStorage.getItem('userRole') || 'user';
-        const currentLoggedInUserId = localStorage.getItem('userId');
-
-        if (response.ok) {
-            if (UI_ELEMENTS.profileViewAvatar) UI_ELEMENTS.profileViewAvatar.src = user.avatar;
-            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = user.username;
-            if (UI_ELEMENTS.profileViewStatus) UI_ELEMENTS.profileViewStatus.textContent = user.status;
-
-            if ((currentUserGlobalRole === 'admin' || currentUserGlobalRole === 'moderator') && user._id !== currentLoggedInUserId) {
-                if (UI_ELEMENTS.kickUserFromProfileBtn) {
-                    UI_ELEMENTS.kickUserFromProfileBtn.style.display = 'block';
-                    UI_ELEMENTS.kickUserFromProfileBtn.dataset.targetUserId = user._id;
-                    UI_ELEMENTS.kickUserFromProfileBtn.dataset.targetUsername = user.username;
-                }
-            }
-
-        } else {
-            if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ইউজার নেই।'; 
-        }
-    } catch (error) {
-        if (UI_ELEMENTS.profileViewUsername) UI_ELEMENTS.profileViewUsername.textContent = 'ত্রুটি!'; 
-        console.error('প্রোফাইল লোড সমস্যা:', error); 
-    }
+    window.location.href = `/profile?id=${userId}`; // প্রোফাইল পেজে রিডাইরেক্ট
 }
+
 
 let typingIndicatorTimer;
 if (UI_ELEMENTS.input) UI_ELEMENTS.input.addEventListener('input', () => socket.emit('typing', { room: currentRoom }));
@@ -959,7 +874,7 @@ socket.on('message edited', ({ messageId, newMessageText }) => {
             const messageActions = msgLi.querySelector('.message-actions');
             if (messageActions) messageActions.remove();
         }
-        if (!msgLi.querySelector('.edited-indicator') && newMessageText !== 'এই মেসেজটি মুছে ফেলা হয়েছে।') {
+        if (!msgLi.querySelector('.edited-indicator') && newMessageText !== 'এই মেসেজটি মুছে ফেলা হয়েছে.') {
             const indicator = document.createElement('small');
             indicator.className = 'edited-indicator';
             indicator.textContent = ' (সম্পাদিত)'; 
@@ -1058,9 +973,6 @@ window.addEventListener('click', (event) => {
     if (UI_ELEMENTS.deleteConfirmationModal && event.target === UI_ELEMENTS.deleteConfirmationModal) {
         UI_ELEMENTS.deleteConfirmationModal.style.display = 'none'; 
     }
-    if (UI_ELEMENTS.viewProfileModal && event.target === UI_ELEMENTS.viewProfileModal) {
-        UI_ELEMENTS.viewProfileModal.style.display = 'none';
-    }
     if (UI_ELEMENTS.ephemeralDurationModal && event.target === UI_ELEMENTS.ephemeralDurationModal) {
         UI_ELEMENTS.ephemeralDurationModal.style.display = 'none';
     }
@@ -1078,20 +990,3 @@ if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.addEventListener('click', (
     if (UI_ELEMENTS.sidebar) UI_ELEMENTS.sidebar.classList.remove('sidebar-open');
     if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.style.display = 'none';
 });
-
-if (UI_ELEMENTS.viewProfileModalCloseBtn) UI_ELEMENTS.viewProfileModalCloseBtn.addEventListener('click', () => {
-    if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'none';
-});
-
-// নতুন: প্রোফাইল মোডাল থেকে কিক বাটনে ক্লিক ইভেন্ট লিসেনার
-if (UI_ELEMENTS.kickUserFromProfileBtn) {
-    UI_ELEMENTS.kickUserFromProfileBtn.addEventListener('click', () => {
-        const targetUserId = UI_ELEMENTS.kickUserFromProfileBtn.dataset.targetUserId;
-        const targetUsername = UI_ELEMENTS.kickUserFromProfileBtn.dataset.targetUsername;
-        
-        if (confirm(`আপনি কি নিশ্চিত যে ${targetUsername} কে বর্তমান রুম থেকে বের করে দিতে চান?`)) {
-            socket.emit('kick user from room', { targetUserId: targetUserId, roomCode: currentRoom });
-            if (UI_ELEMENTS.viewProfileModal) UI_ELEMENTS.viewProfileModal.style.display = 'none'; // কিক করার পর মোডাল বন্ধ করুন
-        }
-    });
-}
