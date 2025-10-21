@@ -266,6 +266,7 @@ app.get('/profile', (req, res) => {
 
 // Socket.IO লজিক
 const onlineUsers = new Map(); // বর্তমানে অনলাইন থাকা ইউজারদের ম্যাপ
+const unreadMessages = new Map(); // অপঠিত মেসেজের সংখ্যা ট্র্যাক করার জন্য
 
 io.on('connection', (socket) => {
     console.log('একজন ব্যবহারকারী সংযুক্ত হয়েছে (Socket ID: ' + socket.id + ')');
@@ -338,6 +339,12 @@ io.on('connection', (socket) => {
 
         Array.from(socket.rooms).forEach(r => { if (r !== socket.id) socket.leave(r); });
         socket.join(roomCode);
+
+        // রুমে যোগদানের সময় অপঠিত মেসেজের সংখ্যা রিসেট করুন
+        if (unreadMessages.has(socket.userId) && unreadMessages.get(socket.userId)[roomCode]) {
+            unreadMessages.get(socket.userId)[roomCode] = 0;
+            socket.emit('unread count updated', unreadMessages.get(socket.userId));
+        }
         
         io.to(roomCode).emit('user joined', `${socket.username} ${roomCode === 'public' ? 'পাবলিক চ্যাটে' : 'রুমে'} যোগ দিয়েছে!`);
         
@@ -495,6 +502,15 @@ io.on('connection', (socket) => {
                         // অনলাইন ব্যবহারকারীদের মধ্যে প্রাপককে খুঁজুন এবং নোটিফিকেশন পাঠান
                         for (const [id, targetSocket] of io.of('/').sockets) {
                             if (targetSocket.userId === recipientId && !targetSocket.rooms.has(room)) {
+                                if (!unreadMessages.has(recipientId)) {
+                                    unreadMessages.set(recipientId, {});
+                                }
+                                if (!unreadMessages.get(recipientId)[room]) {
+                                    unreadMessages.get(recipientId)[room] = 0;
+                                }
+                                unreadMessages.get(recipientId)[room]++;
+                                targetSocket.emit('unread count updated', unreadMessages.get(recipientId));
+
                                 targetSocket.emit('private message notification', {
                                     from: socket.username,
                                     fromUserId: socket.userId,
