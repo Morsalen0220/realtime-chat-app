@@ -1,578 +1,120 @@
-/* Custom CSS Variables (যদি আগে না থাকে, যোগ করো) */
-:root {
-    --primary-color: #007bff; /* Facebook Blue */
-    --primary-color-dark: #0056b3;
-    --secondary-color: #6c757d; /* Grey for secondary buttons */
-    --background-color-primary: #f0f2f5; /* Light grey background for Facebook feel */
-    --background-color-secondary: #ffffff; /* White background for cards */
-    --text-color: #050505; /* Near black text */
-    --text-color-secondary: #65676b; /* Grey text */
-    --border-color: #ced0d4; /* Light grey border */
-    --input-background-color: #f0f2f5;
-    --button-bg: #e4e6eb; /* Light grey for action buttons */
-    --button-text-color: #050505;
-    --button-bg-hover: #d8dade;
-
-    /* Dark mode variables (যদি আগে না থাকে, যোগ করো) */
-    --dark-primary-color: #2e89ff;
-    --dark-primary-color-dark: #1b74e4;
-    --dark-background-color-primary: #18191a; /* Dark background for FB dark mode */
-    --dark-background-color-secondary: #242526; /* Dark card background */
-    --dark-text-color: #e4e6eb;
-    --dark-text-color-secondary: #b0b3b8;
-    --dark-border-color: #3e4042;
-    --dark-input-background-color: #3a3b3c;
-    --dark-button-bg: #3a3b3c;
-    --dark-button-text-color: #e4e6eb;
-    --dark-button-bg-hover: #4e4f50;
-}
-
-body.profile-page-body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 0; /* No padding on body */
-    background-color: var(--background-color-primary);
-    transition: background-color 0.3s ease;
-    overflow-y: auto;
-}
-
-body.dark-theme.profile-page-body {
-    background-color: var(--dark-background-color-primary);
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 20px;
 }
 
 .profile-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 900px; /* Adjust max-width for wider FB-like layout */
-    margin: 0 auto; /* No top/bottom margin if cover photo goes to top */
-    background-color: transparent; /* Main container itself might be transparent */
-    box-shadow: none; /* No shadow on main container */
-    border-radius: 0;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.profile-header {
+    height: 200px;
+    background-color: #ddd;
     position: relative;
-    padding: 0;
 }
 
-.back-to-chat-btn {
-    position: fixed; /* Fixed position */
-    top: 20px;
-    left: 20px;
-    z-index: 100; /* Above other content */
-    background-color: var(--button-bg);
-    color: var(--button-text-color);
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-}
-
-.back-to-chat-btn:hover {
-    background-color: var(--button-bg-hover);
-}
-
-body.dark-theme .back-to-chat-btn {
-    background-color: var(--dark-button-bg);
-    color: var(--dark-button-text-color);
-}
-body.dark-theme .back-to-chat-btn:hover {
-    background-color: var(--dark-button-bg-hover);
-}
-
-
-/* Profile Cover Section */
-.profile-cover-section {
-    width: 100%;
-    position: relative;
-    height: 350px; /* Adjust height as needed */
-    background-color: var(--background-color-secondary); /* Fallback background */
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-body.dark-theme .profile-cover-section {
-    background-color: var(--dark-background-color-secondary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.profile-cover-photo {
+.cover-photo {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Cover the area */
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    object-fit: cover;
 }
 
-.profile-avatar-overlay {
+.profile-picture-container {
     position: absolute;
-    bottom: -80px; /* Adjust to overlap the cover photo */
+    bottom: -75px;
     left: 50%;
     transform: translateX(-50%);
-    width: 180px; /* Size of the avatar container */
-    height: 180px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    background-color: var(--background-color-secondary); /* White background behind avatar */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 0 5px var(--background-color-secondary), 0 5px 15px rgba(0,0,0,0.2); /* White border + shadow */
+    border: 5px solid #fff;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-body.dark-theme .profile-avatar-overlay {
-    background-color: var(--dark-background-color-secondary);
-    box-shadow: 0 0 0 5px var(--dark-background-color-secondary), 0 5px 15px rgba(0,0,0,0.4);
-}
-
-.profile-page-avatar {
-    width: 170px; /* Smaller than container */
-    height: 170px;
+.profile-picture {
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    /* No border or shadow here, it's on the overlay */
 }
 
-/* Profile Info Section */
-.profile-info-section {
-    width: 100%;
-    background-color: var(--background-color-secondary);
-    margin-top: 100px; /* Space for avatar overlay */
-    padding: 20px;
+.profile-info {
     text-align: center;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    position: relative; /* For action buttons positioning */
+    padding: 90px 20px 20px;
 }
 
-body.dark-theme .profile-info-section {
-    background-color: var(--dark-background-color-secondary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.profile-page-username {
-    font-size: 2.5em;
-    font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-.profile-page-status {
-    font-size: 1.2em;
-    color: var(--text-color-secondary);
-    margin-bottom: 15px;
-    font-style: italic;
-}
-
-.profile-meta-details {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
-.profile-meta-details p {
-    font-size: 0.95em;
-    color: var(--text-color-secondary);
+.username {
+    font-size: 24px;
+    font-weight: bold;
     margin: 0;
 }
 
-.profile-action-buttons {
+.bio {
+    font-size: 16px;
+    color: #65676b;
+    margin: 5px 0 20px;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #65676b;
+}
+
+.actions {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
+    padding-bottom: 20px;
 }
 
-.action-btn {
+.btn {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-}
-
-.primary-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-.primary-btn:hover {
-    background-color: var(--primary-color-dark);
-}
-body.dark-theme .primary-btn {
-    background-color: var(--dark-primary-color);
-}
-body.dark-theme .primary-btn:hover {
-    background-color: var(--dark-primary-color-dark);
-}
-
-.secondary-btn {
-    background-color: var(--button-bg);
-    color: var(--button-text-color);
-}
-.secondary-btn:hover {
-    background-color: var(--button-bg-hover);
-}
-body.dark-theme .secondary-btn {
-    background-color: var(--dark-button-bg);
-    color: var(--dark-button-text-color);
-}
-body.dark-theme .secondary-btn:hover {
-    background-color: var(--dark-button-bg-hover);
-}
-
-
-.confirm-btn { /* For kick button, etc. */
-    background-color: #dc3545; /* Red for destructive actions */
-    color: white;
-}
-.confirm-btn:hover {
-    background-color: #c82333;
-}
-body.dark-theme .confirm-btn {
-    background-color: #e53e3e;
-}
-body.dark-theme .confirm-btn:hover {
-    background-color: #c53030;
-}
-
-
-/* Profile Edit Section (still in this page for simplicity, can be modal) */
-.profile-edit-section,
-.profile-content-feed {
-    background-color: var(--background-color-secondary);
-    width: 100%;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-body.dark-theme .profile-edit-section,
-body.dark-theme .profile-content-feed {
-    background-color: var(--dark-background-color-secondary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.profile-edit-section h2,
-.profile-content-feed h3 {
-    text-align: center;
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-size: 1.5em;
+    font-size: 16px;
     font-weight: 600;
-}
-body.dark-theme .profile-edit-section h2,
-body.dark-theme .profile-content-feed h3 {
-    color: var(--dark-text-color);
-}
-
-.avatar-options-profile-page p,
-.status-update-profile-page p,
-.theme-selection-section p {
-    color: var(--text-color-secondary);
-    margin-bottom: 10px;
-    text-align: center;
-}
-body.dark-theme .avatar-options-profile-page p,
-body.dark-theme .status-update-profile-page p,
-body.dark-theme .theme-selection-section p {
-    color: var(--dark-text-color-secondary);
-}
-
-.avatar-choices {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.avatar-choice-profile-page {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid transparent;
     cursor: pointer;
-    transition: border-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s;
 }
 
-.avatar-choice-profile-page:hover {
-    border-color: var(--primary-color);
-    transform: scale(1.05);
-}
-body.dark-theme .avatar-choice-profile-page:hover {
-    border-color: var(--dark-primary-color);
+.connect-btn {
+    background-color: #1877f2;
+    color: #fff;
 }
 
-
-#profilePageStatusInput {
-    width: calc(100% - 20px);
-    padding: 12px;
-    margin-top: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--input-background-color);
-    color: var(--text-color);
-    font-size: 1em;
-    resize: vertical;
-    min-height: 80px;
-    max-height: 150px;
+.connect-btn:hover {
+    background-color: #166fe5;
 }
 
-body.dark-theme #profilePageStatusInput {
-    background-color: var(--dark-input-background-color);
-    border-color: var(--dark-border-color);
-    color: var(--dark-text-color);
+.message-btn {
+    background-color: #e4e6eb;
+    color: #050505;
 }
 
-#profilePageSaveStatusBtn {
-    background-color: #28a745;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    margin-top: 20px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+.message-btn:hover {
+    background-color: #d8dade;
 }
-
-#profilePageSaveStatusBtn:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-}
-#profilePageSaveStatusBtn:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-body.dark-theme #profilePageSaveStatusBtn {
-    background-color: #38a169;
-}
-body.dark-theme #profilePageSaveStatusBtn:hover {
-    background-color: #2f855a;
-}
-body.dark-theme #profilePageSaveStatusBtn:disabled {
-    background-color: #718096;
-}
-
-/* কিক বাটন স্টাইল */
-#kickUserFromProfilePageBtn {
-    background-color: #dc3545;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    margin-top: 20px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-#kickUserFromProfilePageBtn:hover {
-    background-color: #c82333;
-    transform: translateY(-2px);
-}
-
-body.dark-theme #kickUserFromProfilePageBtn {
-    background-color: #e53e3e;
-}
-body.dark-theme #kickUserFromProfilePageBtn:hover {
-    background-color: #c53030;
-}
-
-/* থিম টগল প্রোফাইল পেজে */
-.theme-toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-}
-
-.theme-toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-label {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
-    border-radius: 34px;
-}
-
-.toggle-label:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-input:checked + .toggle-label {
-    background-color: #2196F3;
-}
-
-input:focus + .toggle-label {
-    box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .toggle-label:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
-}
-
-/* Dark mode for profile page */
-body.dark-theme.profile-page-body {
-    background-color: var(--dark-background-color-primary);
-}
-
-body.dark-theme .profile-container {
-    background-color: var(--dark-background-color-secondary);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-theme .profile-page-avatar {
-    border-color: var(--dark-primary-color);
-}
-
-body.dark-theme .profile-page-username,
-body.dark-theme .profile-page-status,
-body.dark-theme .profile-page-meta,
-body.dark-theme .profile-edit-section h2,
-body.dark-theme .avatar-options-profile-page p,
-body.dark-theme .status-update-profile-page p,
-body.dark-theme .theme-selection-section p {
-    color: var(--dark-text-color);
-}
-
-body.dark-theme #profilePageStatusInput {
-    background-color: var(--dark-input-background-color);
-    border-color: var(--dark-border-color);
-    color: var(--dark-text-color);
-}
-
-body.dark-theme #profilePageSaveStatusBtn {
-    background-color: #38a169;
-}
-body.dark-theme #profilePageSaveStatusBtn:hover {
-    background-color: #2f855a;
-}
-body.dark-theme #profilePageSaveStatusBtn:disabled {
-    background-color: #718096;
-}
-
-body.dark-theme #kickUserFromProfilePageBtn {
-    background-color: #e53e3e;
-}
-body.dark-theme #kickUserFromProfilePageBtn:hover {
-    background-color: #c53030;
-}
-
-body.dark-theme .back-to-chat-btn {
-    background-color: var(--dark-button-bg);
-    color: var(--dark-button-text-color);
-}
-body.dark-theme .back-to-chat-btn:hover {
-    background-color: var(--dark-button-bg-hover);
-}
-
-/* Responsive adjustments for profile page */
-@media (max-width: 600px) {
-    .profile-container {
-        margin: 10px auto;
-        padding: 20px;
-        border-radius: 0;
-        box-shadow: none;
-    }
-
-    .profile-page-avatar {
-        width: 120px;
-        height: 120px;
-    }
-
-    .profile-page-username {
-        font-size: 1.8em;
-    }
-
-    .profile-page-status {
-        font-size: 1em;
-    }
-
-    .avatar-choices {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .avatar-choice-profile-page {
-        width: 50px;
-        height: 50px;
-    }
-
-    #profilePageSaveStatusBtn,
-    #kickUserFromProfilePageBtn,
-    .back-to-chat-btn {
-        width: 100%;
-        padding: 10px;
-        font-size: 1em;
-    }
-
-    .back-to-chat-btn {
-        position: static; /* ছোট স্ক্রিনে অ্যাবসলিউট পজিশন সরানো হলো */
-        margin-bottom: 20px;
-        width: calc(100% - 20px);
-    }
-}
-
-/*
-    যেহেতু তুমি profile.css কে একটি আলাদা ফাইল হিসেবে রাখতে চাচ্ছো,
-    এবং তোমার প্রধান style.css ফাইলটি আগেই আপলোড করেছ,
-    আমি অনুমান করছি উপরের কোডগুলো আসলে তোমার নতুন profile.css এর জন্য।
-
-    যদি তোমার মূল style.css এ প্রোফাইল পেজের জন্য কোনো স্টাইল না থাকে,
-    তাহলে তুমি এই পুরো কোডটিই profile.css এ পেস্ট করতে পারো।
-
-    তবে, যদি মূল style.css এ কিছু গ্লোবাল ভেরিয়েবল বা রিসেট স্টাইল থাকে
-    যেগুলো প্রোফাইল পেজেরও দরকার, তাহলে profile.css এ শুধু প্রোফাইল
-    পেজের নির্দিষ্ট স্টাইলগুলো রাখলেই হবে এবং profile.html এ
-    উভয় style.css এবং profile.css কে লিংক করতে হবে।
-
-    যেমন:
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="profile.css">
-
-    যদি তুমি চাও যে profile.css ই প্রোফাইল পেজের সব স্টাইল হ্যান্ডেল করুক
-    এবং style.css থেকে কোনো কনফ্লিক্ট না হোক, তাহলে profile.css এর
-    ভেতরে @import "style.css"; লাইন যোগ করে style.css এর স্টাইল
-    profile.css এ ইম্পোর্ট করতে পারো।
-
-    তবে সহজ সমাধান হলো, profile.html এ দুটি css ফাইলকে লিংক করা।
-*/

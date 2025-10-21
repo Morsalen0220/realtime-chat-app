@@ -258,10 +258,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-// প্রোফাইল পেজ সার্ভিং
-app.get('/profile', (req, res) => {
-    res.sendFile(__dirname + '/public/profile.html');
-});
 
 
 // Socket.IO লজিক

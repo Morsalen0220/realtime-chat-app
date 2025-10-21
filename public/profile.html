@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রোফাইল</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body class="profile-page-body">
+    <div class="profile-container">
+        <div class="profile-header">
+            <img src="https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Cover Photo" class="cover-photo">
+            <div class="profile-picture-container">
+                <img id="profilePageAvatar" src="avatars/avatar1.png" alt="User Avatar" class="profile-picture">
+            </div>
+        </div>
+        <div class="profile-info">
+            <h1 id="profilePageUsername" class="username">লোডিং...</h1>
+            <p id="profilePageBio" class="bio">বায়ো লোড হচ্ছে...</p>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value" id="friendsCount">--</span>
+                    <span class="stat-label">Friends</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="photosCount">--</span>
+                    <span class="stat-label">Photos</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="commentsCount">--</span>
+                    <span class="stat-label">Comments</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn connect-btn"><i class="fas fa-user-plus"></i> Connect</button>
+                <button class="btn message-btn"><i class="fas fa-comment-alt"></i> Message</button>
+            </div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
