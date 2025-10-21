@@ -990,3 +990,25 @@ if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.addEventListener('click', (
     if (UI_ELEMENTS.sidebar) UI_ELEMENTS.sidebar.classList.remove('sidebar-open');
     if (UI_ELEMENTS.menuOverlay) UI_ELEMENTS.menuOverlay.style.display = 'none';
 });
+
+socket.on('private message notification', ({ from, fromUserId, room, message }) => {
+    // ব্যবহারকারীকে জানানো যে একটি নতুন ব্যক্তিগত মেসেজ এসেছে
+    // showNotification(`আপনি ${from} থেকে একটি নতুন ব্যক্তিগত মেসেজ পেয়েছেন: "${message}"`, 'info');
+
+    // ব্যবহারকারীকে সেই রুমে যোগদানের সুযোগ দিন
+    const notificationContainer = document.getElementById('notification-container');
+    const joinButton = document.createElement('button');
+    joinButton.textContent = 'চ্যাটে যান';
+    joinButton.className = 'join-chat-button';
+    joinButton.onclick = () => {
+        joinRoom(room);
+        // নোটিফিকেশনটি সরিয়ে ফেলুন
+        notificationContainer.innerHTML = '';
+    };
+
+    const notification = document.createElement('div');
+    notification.className = 'notification info show';
+    notification.textContent = `আপনি ${from} থেকে একটি নতুন ব্যক্তিগত মেসেজ পেয়েছেন: "${message}"`;
+    notification.appendChild(joinButton);
+    notificationContainer.appendChild(notification);
+});

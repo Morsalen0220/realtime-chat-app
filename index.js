@@ -484,6 +484,33 @@ io.on('connection', (socket) => {
             const messageToSend = newMessage.toObject();
             io.to(room).emit('chat message', messageToSend);
 
+            // ব্যক্তিগত মেসেজের জন্য নোটিফিকেশন পাঠানোর লজিক
+            try {
+                const roomData = await Room.findOne({ name: room });
+                if (roomData && (roomData.type === 'private_one_to_one' || roomData.type === 'private')) {
+                    const otherMembers = roomData.members.filter(member => member.userId.toString() !== socket.userId);
+
+                    for (const member of otherMembers) {
+                        const recipientId = member.userId.toString();
+                        // অনলাইন ব্যবহারকারীদের মধ্যে প্রাপককে খুঁজুন এবং নোটিফিকেশন পাঠান
+                        for (const [id, targetSocket] of io.of('/').sockets) {
+                            if (targetSocket.userId === recipientId && !targetSocket.rooms.has(room)) {
+                                targetSocket.emit('private message notification', {
+                                    from: socket.username,
+                                    fromUserId: socket.userId,
+                                    room: room,
+                                    message: message // মূল মেসেজটি নোটিফিকেশনে যোগ করা হয়েছে
+                                });
+                                console.log(`DEBUG: Sent notification to ${targetSocket.username} from ${socket.username} for room ${room}.`);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending private message notification:', error.message);
+            }
+
+
             // স্ট্যাটাস আপডেট লজিক এখানে থাকতে পারে বা ক্লায়েন্টের উপর নির্ভর করে
             // newMessage.status = 'delivered';
             // await newMessage.save();
