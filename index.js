@@ -258,6 +258,11 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+// প্রোফাইল পেজ সার্ভ করার জন্য নতুন রুট
+app.get('/profile', (req, res) => {
+    res.sendFile(__dirname + '/public/profile.html');
+});
+
 
 
 // Socket.IO লজিক
